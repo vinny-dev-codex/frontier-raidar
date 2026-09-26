@@ -1,0 +1,137 @@
+import type { KnowledgeItem } from "./types";
+
+export const ADDITIONAL_DEMO_ITEMS: KnowledgeItem[] = [
+  {
+    id: "demo-conversation-patterns",
+    title: "Why Good Conversations Still Go Wrong",
+    sourceId: "prototype",
+    sourceName: "Prototype Demonstration",
+    kind: "podcast",
+    status: "ready",
+    publishedAt: "2026-09-19",
+    canonicalUrl: "#",
+    summaryZh:
+      "这条演示卡片说明沟通冲突往往不是观点本身造成的，而是说话速度、直接程度和确认方式不同。改善沟通的关键不是寻找万能话术，而是先识别双方默认采用的互动规则。",
+    tags: ["心理学", "沟通", "人际关系"],
+    people: ["Maya Chen", "Daniel Brooks"],
+    companies: [],
+    terms: [
+      { zh: "对话风格", en: "Conversational Style" },
+      { zh: "元沟通", en: "Metacommunication" },
+    ],
+    platformVersions: [
+      { platform: "Podcast RSS", url: "#", durationSeconds: 2820, publishedAt: "2026-09-19", matchStatus: "exact" },
+      { platform: "Official Website", url: "#", publishedAt: "2026-09-19", matchStatus: "exact" },
+    ],
+    transcriptSource: {
+      kind: "OS",
+      label: "Official Episode Transcript",
+      platform: "Official Website",
+      url: "#",
+      hasTimestamps: true,
+      verified: true,
+    },
+    claims: [
+      demoClaim("C01", "人们常把交流风格差异误判为态度问题。", "opinion", "04:12–04:30", "A direct answer can sound hostile to someone who uses questions to signal care.", "该判断解释了为什么双方都没有恶意时仍可能产生冲突。"),
+      demoClaim("C02", "相同词语在不同关系中可能承担不同的社会功能。", "fact", "09:05–09:24", "The same sentence can request information, offer reassurance, or establish status.", "理解一句话必须同时考虑关系和场景。"),
+      demoClaim("C03", "重复确认并不一定代表没有理解。", "opinion", "15:31–15:50", "Repetition is often a sign of involvement rather than a failure to listen.", "高参与式谈话者会用重复表示关注，但另一方可能感到被打断。"),
+      demoClaim("C04", "解释自己的沟通习惯可以减少对动机的错误猜测。", "advice", "23:14–23:38", "Naming the pattern gives both people an alternative to blaming intent.", "元沟通不能解决所有分歧，但能先降低错误归因。"),
+      demoClaim("C05", "有效沟通需要建立双方都能接受的反馈规则。", "advice", "34:06–34:29", "A useful rule is one both people can recognize while the conversation is happening.", "可执行规则应具体、及时，而且能够被双方观察。"),
+    ],
+    analysis: {
+      whyZh: ["人会根据自己的沟通习惯推断他人的意图。", "关系压力会让人更容易把模糊信号解释为威胁。"],
+      horizontalZh: ["归因理论强调人们容易高估性格、低估情境；主动倾听则强调复述与确认。"],
+      crossDisciplinaryZh: ["语言学研究互动规则，心理学研究归因，组织行为学研究团队中的心理安全感。"],
+      applicationZh: ["发生争执时先描述可观察的谈话模式，再讨论观点本身。"],
+      personalZh: ["在访谈、合作和未来创业中，先确认对方偏好的沟通节奏和反馈方式。"],
+      memoryZh: { keywords: ["风格", "归因", "元沟通"], analogy: "两个人使用同一种语言，却运行着不同的对话操作系统。", recallQuestion: "冲突来自观点，还是来自双方默认的互动规则？" },
+    },
+    visuals: {
+      timeline: [
+        { locator: "04:12", label: "Style Misread as Intent", claimId: "C01" },
+        { locator: "15:31", label: "Repetition as Involvement", claimId: "C03" },
+        { locator: "23:14", label: "Name the Pattern", claimId: "C04" },
+      ],
+      tree: { label: "Conversation Conflict", children: [{ label: "Style", children: [{ label: "Directness" }, { label: "Pacing" }] }, { label: "Interpretation", children: [{ label: "Intent" }, { label: "Status" }] }, { label: "Repair", children: [{ label: "Metacommunication" }, { label: "Shared Rule" }] }] },
+      comparison: [{ question: "Why repeat a point?", viewA: "Failure to listen", viewB: "Signal of involvement", evidenceIds: ["P-C03"] }],
+    },
+    isDemo: true,
+  },
+  {
+    id: "demo-company-operating-system",
+    title: "Why Enduring Companies Build an Operating System",
+    sourceId: "prototype",
+    sourceName: "Prototype Demonstration",
+    kind: "video",
+    status: "ready",
+    publishedAt: "2026-09-17",
+    canonicalUrl: "#",
+    summaryZh:
+      "这条演示内容把长期竞争力拆成一套可重复的公司运行方式：明确选择、把判断变成流程、持续接收一线反馈，并在规模扩大后仍然保护核心标准。",
+    tags: ["商业", "公司战略", "组织"],
+    people: ["Nora Williams"],
+    companies: ["Atlas Works"],
+    terms: [
+      { zh: "运营系统", en: "Operating System" },
+      { zh: "组织能力", en: "Organizational Capability" },
+    ],
+    platformVersions: [{ platform: "YouTube", url: "#", durationSeconds: 3360, publishedAt: "2026-09-17", matchStatus: "exact" }],
+    transcriptSource: { kind: "CC", label: "Creator-provided Captions", platform: "YouTube", url: "#", hasTimestamps: true, verified: true },
+    claims: [
+      demoClaim("C01", "战略只有转化为重复决策规则后才会影响日常运营。", "opinion", "06:42–07:02", "Strategy becomes real when ordinary decisions consistently reflect the same trade-offs.", "口号不能替代可观察的资源取舍。", "CC"),
+      demoClaim("C02", "流程的目标是保存高质量判断，而不是增加审批层级。", "opinion", "13:20–13:41", "A good process preserves judgment; it does not replace judgment with permission.", "需要区分可复用流程与官僚控制。", "CC"),
+      demoClaim("C03", "一线反馈必须能够改变管理层原有假设。", "advice", "21:11–21:34", "Feedback is not a ritual if it can invalidate the plan leaders already prefer.", "只有反馈能够改变计划时，反馈系统才真实有效。", "CC"),
+      demoClaim("C04", "规模扩大后，例外管理会逐渐侵蚀公司标准。", "prediction", "32:08–32:29", "Every convenient exception teaches the organization what the standard is actually worth.", "例外有时必要，但应记录原因和退出条件。", "CC"),
+      demoClaim("C05", "持久优势来自互相强化的一组能力，而不是单点技巧。", "opinion", "45:00–45:25", "The moat is rarely one practice; it is the way several practices reinforce one another.", "这一判断与系统思维和互补性竞争优势相吻合。", "CC"),
+    ],
+    analysis: {
+      whyZh: ["组织扩大后，创始人的个人判断无法覆盖所有决策。", "把判断编码为原则、流程和反馈机制，才能在扩张时保持一致。"],
+      horizontalZh: ["相似观点包括飞轮效应、互补性资源和高可靠性组织；反方担心流程会压制探索。"],
+      crossDisciplinaryZh: ["系统论关注反馈回路，行为经济学关注激励，社会学关注规范如何形成。"],
+      applicationZh: ["分析公司时，检查它如何做取舍、处理例外、传递反馈，而不只看使命宣言。"],
+      personalZh: ["未来建立品牌时，把质量标准写成团队能重复执行的判断规则。"],
+      memoryZh: { keywords: ["取舍", "反馈", "互补能力"], analogy: "公司像操作系统：单个应用可以更换，底层规则决定整体行为。", recallQuestion: "这家公司依靠某个明星，还是依靠可重复的运行方式？" },
+    },
+    visuals: {
+      timeline: [{ locator: "06:42", label: "Trade-offs Become Rules", claimId: "C01" }, { locator: "21:11", label: "Feedback Changes Plans", claimId: "C03" }, { locator: "45:00", label: "Capabilities Reinforce", claimId: "C05" }],
+      tree: { label: "Company Operating System", children: [{ label: "Choices", children: [{ label: "Trade-offs" }] }, { label: "Execution", children: [{ label: "Process" }, { label: "Standards" }] }, { label: "Learning", children: [{ label: "Frontline Feedback" }] }] },
+      comparison: [{ question: "What is process for?", viewA: "More approvals", viewB: "Preserved judgment", evidenceIds: ["P-C02"] }],
+    },
+    isDemo: true,
+  },
+  {
+    id: "acquired-home-depot-review",
+    title: "The Home Depot",
+    sourceId: "acquired",
+    sourceName: "Acquired",
+    kind: "podcast",
+    status: "pending_review",
+    publishedAt: "2026-09-14",
+    canonicalUrl: "https://www.acquired.fm/episodes/home-depot",
+    unavailableReasonZh: "已发现官方节目和 RSS transcript.txt/VTT，等待完成真实模型处理和证据校验。",
+    tags: ["商业", "公司历史", "零售"],
+    people: ["Bernie Marcus", "Arthur Blank"],
+    companies: ["The Home Depot"],
+    terms: [{ zh: "竞争优势", en: "Competitive Advantage" }],
+    platformVersions: [{ platform: "Podcast RSS", url: "https://www.acquired.fm/episodes/home-depot", durationSeconds: 12902, publishedAt: "2026-09-14", matchStatus: "exact" }],
+    isDemo: true,
+  },
+];
+
+function demoClaim(
+  id: string,
+  titleZh: string,
+  informationType: "fact" | "opinion" | "prediction" | "advice",
+  locator: string,
+  quote: string,
+  assessmentZh: string,
+  sourceKind: "OS" | "CC" = "OS",
+) {
+  return {
+    id,
+    titleZh,
+    informationType,
+    assessmentZh,
+    evidence: [{ id: `P-${id}`, relation: "PRIMARY" as const, locator, speaker: "G1", sourceKind, quote }],
+  };
+}
