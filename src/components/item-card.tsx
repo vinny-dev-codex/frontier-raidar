@@ -3,6 +3,10 @@ import { StatusBadge } from "./status-badge";
 import type { KnowledgeItem } from "@/lib/types";
 
 export function ItemCard({ item }: { item: KnowledgeItem }) {
+  const itemHref = process.env.NEXT_PUBLIC_STATIC_EXPORT === "true"
+    ? `/item?id=${encodeURIComponent(item.id)}`
+    : `/item/${item.id}`;
+
   return (
     <article className="item-card">
       <div className="item-card-topline">
@@ -10,7 +14,7 @@ export function ItemCard({ item }: { item: KnowledgeItem }) {
         <time dateTime={item.publishedAt}>{item.publishedAt}</time>
       </div>
       <h2>
-        <Link href={`/item/${item.id}`}>{item.title}</Link>
+        <Link href={itemHref}>{item.title}</Link>
       </h2>
       <StatusBadge status={item.status} />
       {item.status === "ready" ? (

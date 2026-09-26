@@ -96,6 +96,10 @@ GitHub Actions 每天在悉尼时间早晨附近运行一次自动流程：发�
 2. 在 Vercel 环境变量中填写 `NEXT_PUBLIC_SUPABASE_URL` 与 `NEXT_PUBLIC_SUPABASE_ANON_KEY`。
 3. 执行公开读取迁移后，直接把 Vercel 网址分享给家人。
 
+### 中国大陆访问测试（CloudBase）
+
+为验证大陆网络可用性，仓库提供了一条与 Vercel 隔离的 CloudBase 测试路径：静态网页通过 CloudBase 云函数读取现有 Supabase 公开知识库，浏览器不会直连 Supabase。完整部署、密钥边界、验收和回退说明见 [CloudBase 国内访问测试](docs/cloudbase-domestic-test.md)。
+
 ## 验证命令
 
 ```powershell
