@@ -36,12 +36,25 @@ function failureMessage(error: unknown) {
 
 async function resolveOwnerId(database: NonNullable<ReturnType<typeof createServiceSupabaseClient>>) {
   const env = getPrivateEnv();
+  if (env.OWNER_EMAIL) {
+    const { data, error } = await database.auth.admin.listUsers({ page: 1, perPage: 100 });
+    if (error) throw error;
+    const owner = data.users.find((user) => user.email?.toLowerCase() === env.OWNER_EMAIL?.toLowerCase());
+    if (!owner) throw new Error("OWNER_EMAIL did not match a Supabase user.");
+    return owner.id;
+  }
+
+  const { data: existingItems, error: existingItemsError } = await database
+    .from("knowledge_items")
+    .select("user_id")
+    .limit(10);
+  if (existingItemsError) throw existingItemsError;
+  const existingOwners = [...new Set((existingItems ?? []).map((item) => item.user_id))];
+  if (existingOwners.length === 1) return existingOwners[0];
+
   const { data, error } = await database.auth.admin.listUsers({ page: 1, perPage: 100 });
   if (error) throw error;
-
-  const owner = env.OWNER_EMAIL
-    ? data.users.find((user) => user.email?.toLowerCase() === env.OWNER_EMAIL?.toLowerCase())
-    : data.users.length === 1 ? data.users[0] : undefined;
+  const owner = data.users.length === 1 ? data.users[0] : undefined;
   if (!owner) throw new Error("Set OWNER_EMAIL in GitHub Secrets when the Supabase project has more than one user.");
   return owner.id;
 }

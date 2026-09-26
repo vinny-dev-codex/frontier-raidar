@@ -74,7 +74,7 @@ npm run dev
 
 GitHub Actions 每天在悉尼时间早晨附近运行一次自动流程：发现第一阶段来源、验证官方正文或官方 RSS 文稿、最多制作一张知识卡片、保存中文证据翻译和搜索向量，然后公开成品。无原文不会调用模型或生成卡片；失败条目会停下并等待人工重试。
 
-自动化需要在 GitHub 仓库 Secrets 中设置：`SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`DEEPSEEK_API_KEY`、`DASHSCOPE_API_KEY`。其余模型与基础地址可使用现有默认值；如果 Supabase 有多个用户，再设置 `OWNER_EMAIL`。这些密钥只供 GitHub Actions 使用，绝不写入代码或浏览器。
+自动化需要在 GitHub 仓库 Secrets 中设置：`SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`DEEPSEEK_API_KEY`、`DASHSCOPE_API_KEY`。模型和基础地址沿用代码的默认值；已有知识卡片会自动确定归属用户，只有项目中存在多个归属用户时才需要 `OWNER_EMAIL`。这些密钥只供 GitHub Actions 使用，绝不写入代码或浏览器。
 
 最后执行：
 
