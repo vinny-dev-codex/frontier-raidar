@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "discover": "tsx scripts/discover.ts",
+    "automate": "node --env-file=.env.local --import tsx scripts/automate.ts",
     "process:first": "node --env-file=.env.local --import tsx scripts/process-first-item.ts",
     "keepalive": "node --env-file=.env.local --import tsx scripts/keepalive.ts",
     "rewrite:home-depot-visuals": "node --env-file=.env.local --import tsx scripts/rewrite-home-depot-visuals.ts",

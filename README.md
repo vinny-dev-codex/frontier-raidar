@@ -72,7 +72,9 @@ npm run dev
 
 第二个迁移会记录每次 DeepSeek 与百炼调用的模型、时间、令牌数和结果，不保存密钥或完整文稿；它也提供 350 MiB 数据库预警阈值。默认每天最多成功处理 1 条 DeepSeek 知识卡片。失败会标记为需人工重试，只有显式设置 `FORCE_RETRY=true` 才能重试。
 
-GitHub Actions 每日发现来源；设置仓库 Secrets `SUPABASE_URL` 与 `SUPABASE_SERVICE_ROLE_KEY` 后，同一工作流会顺带执行一次轻量 Supabase 查询，避免 Free 项目长期无活动。未设置 Secrets 时该步骤会跳过。
+GitHub Actions 每天在悉尼时间早晨附近运行一次自动流程：发现第一阶段来源、验证官方正文或官方 RSS 文稿、最多制作一张知识卡片、保存中文证据翻译和搜索向量，然后公开成品。无原文不会调用模型或生成卡片；失败条目会停下并等待人工重试。
+
+自动化需要在 GitHub 仓库 Secrets 中设置：`SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`DEEPSEEK_API_KEY`、`DASHSCOPE_API_KEY`。其余模型与基础地址可使用现有默认值；如果 Supabase 有多个用户，再设置 `OWNER_EMAIL`。这些密钥只供 GitHub Actions 使用，绝不写入代码或浏览器。
 
 最后执行：
 
