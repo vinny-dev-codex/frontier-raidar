@@ -13,7 +13,8 @@
     "discover": "tsx scripts/discover.ts",
     "process:first": "node --env-file=.env.local --import tsx scripts/process-first-item.ts",
     "keepalive": "node --env-file=.env.local --import tsx scripts/keepalive.ts",
-    "rewrite:home-depot-visuals": "node --env-file=.env.local --import tsx scripts/rewrite-home-depot-visuals.ts"
+    "rewrite:home-depot-visuals": "node --env-file=.env.local --import tsx scripts/rewrite-home-depot-visuals.ts",
+    "translate:evidence": "node --env-file=.env.local --import tsx scripts/translate-evidence.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

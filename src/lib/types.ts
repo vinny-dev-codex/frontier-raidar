@@ -45,6 +45,7 @@ export type Evidence = {
   speaker: string;
   sourceKind: TranscriptKind;
   quote: string;
+  translationZh?: string;
 };
 
 export type Claim = {

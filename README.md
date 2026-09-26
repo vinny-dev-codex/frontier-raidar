@@ -80,6 +80,12 @@ GitHub Actions 每日发现来源；设置仓库 Secrets `SUPABASE_URL` 与 `SUP
 
 这条迁移仅开放已完成知识卡片及其展示所需的关联数据给匿名访客；模型用量、处理记录、搜索嵌入和所有写入权限保持私有。
 
+最后执行：
+
+`supabase/migrations/202609260005_cache_evidence_translations.sql`
+
+每张卡片的全部英文证据会在制作时一次性译为中文并保存。网页只显示已保存译文，不会因访客点击而重复调用模型。
+
 ## 上线与分享
 
 采用最小部署：Vercel 托管网站，Supabase 托管数据。任何拿到链接的人都可直接阅读，不需要登录。

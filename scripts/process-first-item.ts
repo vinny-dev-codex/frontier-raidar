@@ -4,6 +4,7 @@ import { getPrivateEnv } from "../src/lib/env";
 import { createSearchEmbedding } from "../src/lib/qwen";
 import { createServiceSupabaseClient } from "../src/lib/supabase";
 import { fetchTranscriptTemporarily } from "../src/lib/transcript";
+import { translateEvidenceBatchToChinese } from "../src/lib/translation";
 import type { Evidence, TranscriptSource } from "../src/lib/types";
 
 const ITEM = {
@@ -205,8 +206,23 @@ async function main() {
     quote: evidence.quote,
   })));
   if (evidenceRows.some((row) => !row.claim_id)) throw new Error("A claim could not be linked to its evidence.");
-  const { error: evidenceError } = await database.from("evidence").insert(evidenceRows);
+  const { data: storedEvidence, error: evidenceError } = await database.from("evidence").insert(evidenceRows).select("id,evidence_code,quote");
   if (evidenceError) throw evidenceError;
+
+  const translations = await translateEvidenceBatchToChinese(storedEvidence);
+  const { error: translationError } = await database.from("evidence_translations").upsert(
+    storedEvidence.map((evidence) => ({
+      evidence_id: evidence.id,
+      translation_zh: translations.translations.get(evidence.id)!,
+      model: translations.model,
+    })),
+    { onConflict: "evidence_id" },
+  );
+  if (translationError) throw translationError;
+  await recordUsage({
+    provider: "deepseek", model: translations.model, operation: "evidence_translation", status: "succeeded", itemId,
+    promptTokens: translations.usage.promptTokens, completionTokens: translations.usage.completionTokens, totalTokens: translations.usage.totalTokens,
+  });
 
   const { error: analysisError } = await database.from("analyses").insert({
     item_id: itemId,
@@ -265,6 +281,7 @@ async function main() {
     transcriptSegments: segments.length,
     claims: draft.claims.length,
     evidence: evidenceRows.length,
+    translations: storedEvidence.length,
     searchDocuments: searchRows.length,
   }));
 }

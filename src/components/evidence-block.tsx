@@ -15,11 +15,12 @@ function InlineTerms({ quote, terms }: { quote: string; terms: KnowledgeItem["te
   });
 }
 
-export function EvidenceBlock({ evidence, terms = [] }: { evidence: Evidence; terms?: KnowledgeItem["terms"] }) {
+export function EvidenceBlock({ evidence, showTranslation, terms = [] }: { evidence: Evidence; showTranslation: boolean; terms?: KnowledgeItem["terms"] }) {
   return (
     <blockquote className="evidence-block" id={evidence.id}>
       <SourceCode evidence={evidence} />
       <p lang="en">“<InlineTerms quote={evidence.quote} terms={terms} />”</p>
+      {showTranslation ? <p className="evidence-translation" lang="zh-CN">{evidence.translationZh ?? "这段译文正在生成，请稍后刷新页面。"}</p> : null}
     </blockquote>
   );
 }

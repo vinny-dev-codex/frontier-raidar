@@ -3,7 +3,7 @@ import type { KnowledgeItem } from "./types";
 
 type Row = Record<string, any>;
 
-const SELECT = "id,title,source_id,kind,status,published_at,canonical_url,summary_zh,unavailable_reason_zh,tags,people,companies,terms,sources(name),platform_versions(platform,url,duration_seconds,published_at,match_status),transcript_sources(source_kind,label,platform,url,has_timestamps,verified,selected),claims(id,claim_code,position,title_zh,information_type,assessment_zh,evidence(id,evidence_code,relation,locator,speaker,source_kind,quote)),analyses(why_zh,horizontal_zh,cross_disciplinary_zh,application_zh,personal_zh,memory_zh),visuals(timeline,tree,comparison)";
+const SELECT = "id,title,source_id,kind,status,published_at,canonical_url,summary_zh,unavailable_reason_zh,tags,people,companies,terms,sources(name),platform_versions(platform,url,duration_seconds,published_at,match_status),transcript_sources(source_kind,label,platform,url,has_timestamps,verified,selected),claims(id,claim_code,position,title_zh,information_type,assessment_zh,evidence(id,evidence_code,relation,locator,speaker,source_kind,quote,evidence_translations(translation_zh))),analyses(why_zh,horizontal_zh,cross_disciplinary_zh,application_zh,personal_zh,memory_zh),visuals(timeline,tree,comparison)";
 
 function list(value: unknown): Row[] {
   return Array.isArray(value) ? value as Row[] : value ? [value as Row] : [];
@@ -24,6 +24,7 @@ function mapItem(row: Row): KnowledgeItem {
         speaker: evidence.speaker,
         sourceKind: evidence.source_kind,
         quote: evidence.quote,
+        translationZh: list(evidence.evidence_translations)[0]?.translation_zh,
       })),
     }));
   const analysis = list(row.analyses)[0];
