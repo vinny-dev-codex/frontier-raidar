@@ -81,9 +81,7 @@ function mapItem(row: Row): KnowledgeItem {
 export async function loadLiveItems() {
   const client = createPublicSupabaseClient();
   if (!client) throw new Error("Supabase is not configured.");
-  const { data: sessionData } = await client.auth.getSession();
-  if (!sessionData.session) return { signedIn: false, items: [] as KnowledgeItem[] };
   const { data, error } = await client.from("knowledge_items").select(SELECT).order("published_at", { ascending: false });
   if (error) throw error;
-  return { signedIn: true, items: list(data).map(mapItem) };
+  return list(data).map(mapItem);
 }

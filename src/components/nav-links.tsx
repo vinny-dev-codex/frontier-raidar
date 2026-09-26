@@ -8,7 +8,6 @@ const navItems = [
   { href: "/library", label: "知识库" },
   { href: "/sources", label: "来源" },
   { href: "/settings", label: "设置" },
-  { href: "/login", label: "登录" },
 ];
 
 export function NavLinks() {

@@ -51,7 +51,7 @@ npm run dev
 
 在 `.env.local` 填写：
 
-- Supabase：网页数据库、认证、全文和向量搜索。
+- Supabase：公开只读知识库、全文和向量搜索。
 - DeepSeek：中文摘要、5–10 条关键论点和拓展分析。
 - DashScope Qwen Embedding：轻量语义搜索，仅 768 维精选文本。
 - Google Cloud YouTube Data API v3：官方频道、视频标题、发布时间与平台版本发现。
@@ -74,28 +74,19 @@ npm run dev
 
 GitHub Actions 每日发现来源；设置仓库 Secrets `SUPABASE_URL` 与 `SUPABASE_SERVICE_ROLE_KEY` 后，同一工作流会顺带执行一次轻量 Supabase 查询，避免 Free 项目长期无活动。未设置 Secrets 时该步骤会跳过。
 
-然后执行：
+最后执行：
 
-`supabase/migrations/202609240003_sharing_and_notifications.sql`
+`supabase/migrations/202609260004_public_read_library.sql`
 
-这条迁移增加一个只读家人关系。家人没有写入权限。
+这条迁移仅开放已完成知识卡片及其展示所需的关联数据给匿名访客；模型用量、处理记录、搜索嵌入和所有写入权限保持私有。
 
-## 上线与家人共享
+## 上线与分享
 
-采用最小部署：Vercel 托管网站，Supabase 托管认证与数据库。
+采用最小部署：Vercel 托管网站，Supabase 托管数据。任何拿到链接的人都可直接阅读，不需要登录。
 
 1. 将仓库推送到 GitHub，并在 Vercel 导入仓库。首次可直接使用 Vercel 提供的 `*.vercel.app` 地址。
 2. 在 Vercel 环境变量中填写 `NEXT_PUBLIC_SUPABASE_URL` 与 `NEXT_PUBLIC_SUPABASE_ANON_KEY`。
-3. 在 Supabase Authentication 的 URL Configuration 中把 Site URL 和允许的 Redirect URL 都设为 Vercel 正式网址；这样魔法登录链接会回到真实网站。
-4. 家人首次通过正式网址登录后，在本机执行：
-
-```powershell
-$env:READER_EMAIL="家人的登录邮箱"
-npm run share:reader
-Remove-Item Env:READER_EMAIL
-```
-
-该命令只授予阅读权限，不会调用模型或发送通知。
+3. 执行公开读取迁移后，直接把 Vercel 网址分享给家人。
 
 ## 验证命令
 

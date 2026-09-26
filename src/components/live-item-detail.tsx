@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { EvidenceBlock } from "./evidence-block";
 import { ReadingActions } from "./reading-actions";
@@ -11,12 +10,10 @@ import type { KnowledgeItem } from "@/lib/types";
 
 export function LiveItemDetail({ id }: { id: string }) {
   const [item, setItem] = useState<KnowledgeItem | null | undefined>(undefined);
-  const [signedIn, setSignedIn] = useState(false);
-  useEffect(() => { loadLiveItems().then(({ signedIn, items }) => { setSignedIn(signedIn); setItem(items.find((candidate) => candidate.id === id) ?? null); }).catch(() => setItem(null)); }, [id]);
+  useEffect(() => { loadLiveItems().then((items) => setItem(items.find((candidate) => candidate.id === id) ?? null)).catch(() => setItem(null)); }, [id]);
 
   if (item === undefined) return <p className="muted">正在读取知识卡片…</p>;
-  if (!signedIn) return <aside className="notice">请先<Link href="/login">登录个人知识库</Link>。</aside>;
-  if (!item) return <section className="empty-state"><h1>内容不存在</h1><p>这条内容不属于当前登录账户，或尚未完成处理。</p></section>;
+  if (!item) return <section className="empty-state"><h1>内容不存在</h1><p>这条内容不存在，或尚未完成处理。</p></section>;
 
   return <article className="detail-page">
     <header className="detail-header">

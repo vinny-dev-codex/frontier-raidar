@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { LocalDataPanel } from "@/components/local-data-panel";
 import { getIntegrationState } from "@/lib/env";
 
@@ -8,7 +7,7 @@ export const metadata: Metadata = { title: "设置" };
 export default function SettingsPage() {
   const integrations = getIntegrationState();
   const services = [
-    { name: "Supabase", ready: integrations.supabase, purpose: "数据库、认证、全文和向量搜索" },
+    { name: "Supabase", ready: integrations.supabase, purpose: "公开只读知识库、全文和向量搜索" },
     { name: "DeepSeek Flash", ready: integrations.deepseek, purpose: "中文摘要、关键论点与拓展分析" },
     { name: "Qwen Embedding Flash", ready: integrations.qwenEmbedding, purpose: "768 维精选文本语义搜索" },
     { name: "YouTube Data API v3", ready: integrations.youtube, purpose: "官方频道与视频元数据发现" },
@@ -19,7 +18,7 @@ export default function SettingsPage() {
       <section className="page-heading">
         <p className="eyebrow">SETTINGS</p>
         <h1>运行设置</h1>
-        <p>当前应用无需密钥也能完整浏览和记录阅读状态；连接云服务后切换到真实自动处理。</p>
+        <p>任何拿到链接的人都可阅读已完成的知识卡片；收藏和已读状态仅保存在当前设备。</p>
       </section>
 
       <section className="settings-section">
@@ -54,14 +53,6 @@ export default function SettingsPage() {
         <LocalDataPanel />
       </section>
 
-      <section className="settings-section">
-        <h2>接入真实服务</h2>
-        <p>你的服务账号已配置。先登录个人知识库，再处理并保存真实内容。</p>
-        <div className="settings-actions">
-          <Link className="setup-link" href="/login">登录个人知识库 →</Link>
-          <Link className="text-button" href="/setup">检查本机服务配置</Link>
-        </div>
-      </section>
     </>
   );
 }

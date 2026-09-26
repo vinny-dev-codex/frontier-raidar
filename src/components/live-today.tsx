@@ -8,17 +8,16 @@ import type { KnowledgeItem } from "@/lib/types";
 
 export function LiveToday() {
   const [items, setItems] = useState<KnowledgeItem[]>([]);
-  const [state, setState] = useState<"loading" | "signed-out" | "ready" | "error">("loading");
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
-    loadLiveItems().then(({ signedIn, items: loaded }) => {
+    loadLiveItems().then((loaded) => {
       setItems(loaded);
-      setState(signedIn ? "ready" : "signed-out");
+      setState("ready");
     }).catch(() => setState("error"));
   }, []);
 
-  if (state === "loading") return <p className="muted">正在读取你的个人知识库…</p>;
-  if (state === "signed-out") return <aside className="notice">请先<Link href="/login">登录个人知识库</Link>，再查看真实内容。</aside>;
+  if (state === "loading") return <p className="muted">正在读取知识库…</p>;
   if (state === "error") return <aside className="setup-message error">无法读取 Supabase 数据，请刷新后重试。</aside>;
 
   const readyItems = items.filter((item) => item.status === "ready");
