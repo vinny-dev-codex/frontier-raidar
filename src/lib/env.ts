@@ -1,27 +1,33 @@
 import { z } from "zod";
 
+const blankToUndefined = (value: unknown) =>
+  typeof value === "string" && value.trim() === "" ? undefined : value;
+
+const optionalString = z.preprocess(blankToUndefined, z.string().min(1).optional());
+const optionalUrl = z.preprocess(blankToUndefined, z.string().url().optional());
+const optionalEmail = z.preprocess(blankToUndefined, z.string().email().optional());
+const defaultString = (value: string) => z.preprocess(blankToUndefined, z.string().default(value));
+const defaultUrl = (value: string) => z.preprocess(blankToUndefined, z.string().url().default(value));
+
 const privateSchema = z.object({
-  DEEPSEEK_API_KEY: z.string().min(1).optional(),
-  DEEPSEEK_BASE_URL: z.string().url().default("https://api.deepseek.com"),
-  DEEPSEEK_MODEL: z.string().default("deepseek-flash"),
-  DASHSCOPE_API_KEY: z.string().min(1).optional(),
-  DASHSCOPE_BASE_URL: z
-    .string()
-    .url()
-    .default("https://dashscope.aliyuncs.com/compatible-mode/v1"),
-  QWEN_EMBEDDING_MODEL: z.string().default("qwen3.7-text-embedding-flash"),
-  YOUTUBE_API_KEY: z.string().min(1).optional(),
-  YOUTUBE_API_BASE_URL: z.string().url().default("https://www.googleapis.com/youtube/v3"),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  OWNER_EMAIL: z.string().email().optional(),
-  RESEND_API_KEY: z.string().min(1).optional(),
-  RESEND_FROM_EMAIL: z.string().email().optional(),
-  APP_URL: z.string().url().default("http://localhost:3000"),
+  DEEPSEEK_API_KEY: optionalString,
+  DEEPSEEK_BASE_URL: defaultUrl("https://api.deepseek.com"),
+  DEEPSEEK_MODEL: defaultString("deepseek-flash"),
+  DASHSCOPE_API_KEY: optionalString,
+  DASHSCOPE_BASE_URL: defaultUrl("https://dashscope.aliyuncs.com/compatible-mode/v1"),
+  QWEN_EMBEDDING_MODEL: defaultString("qwen3.7-text-embedding-flash"),
+  YOUTUBE_API_KEY: optionalString,
+  YOUTUBE_API_BASE_URL: defaultUrl("https://www.googleapis.com/youtube/v3"),
+  SUPABASE_SERVICE_ROLE_KEY: optionalString,
+  OWNER_EMAIL: optionalEmail,
+  RESEND_API_KEY: optionalString,
+  RESEND_FROM_EMAIL: optionalEmail,
+  APP_URL: defaultUrl("http://localhost:3000"),
 });
 
 const publicSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
+  NEXT_PUBLIC_SUPABASE_URL: optionalUrl,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: optionalString,
 });
 
 export function getPrivateEnv() {
