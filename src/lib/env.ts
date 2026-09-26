@@ -20,9 +20,6 @@ const privateSchema = z.object({
   YOUTUBE_API_BASE_URL: defaultUrl("https://www.googleapis.com/youtube/v3"),
   SUPABASE_SERVICE_ROLE_KEY: optionalString,
   OWNER_EMAIL: optionalEmail,
-  RESEND_API_KEY: optionalString,
-  RESEND_FROM_EMAIL: optionalEmail,
-  APP_URL: defaultUrl("http://localhost:3000"),
 });
 
 const publicSchema = z.object({

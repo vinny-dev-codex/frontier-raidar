@@ -78,17 +78,16 @@ GitHub Actions 每日发现来源；设置仓库 Secrets `SUPABASE_URL` 与 `SUP
 
 `supabase/migrations/202609240003_sharing_and_notifications.sql`
 
-这条迁移增加一个只读家人关系和一张邮件发送记录表。家人没有写入权限；每张卡片对每位收件人最多发送一次邮件。
+这条迁移增加一个只读家人关系。家人没有写入权限。
 
-## 上线、家人共享与邮件
+## 上线与家人共享
 
-采用最小部署：Vercel 托管网站，Supabase 托管认证与数据库，Resend 仅发送新卡摘要邮件。
+采用最小部署：Vercel 托管网站，Supabase 托管认证与数据库。
 
 1. 将仓库推送到 GitHub，并在 Vercel 导入仓库。首次可直接使用 Vercel 提供的 `*.vercel.app` 地址。
-2. 在 Vercel 环境变量中填写当前 `.env.local` 的 Supabase、DeepSeek、百炼、YouTube 值，以及 `APP_URL`（Vercel 的正式网址）、`OWNER_EMAIL`、`RESEND_API_KEY`、`RESEND_FROM_EMAIL`。
+2. 在 Vercel 环境变量中填写 `NEXT_PUBLIC_SUPABASE_URL` 与 `NEXT_PUBLIC_SUPABASE_ANON_KEY`。
 3. 在 Supabase Authentication 的 URL Configuration 中把 Site URL 和允许的 Redirect URL 都设为 Vercel 正式网址；这样魔法登录链接会回到真实网站。
-4. 在 Resend 验证发件域名；在 Supabase Authentication 的 SMTP 设置中填入 Resend SMTP，以便家人能够收到登录链接。
-5. 家人首次通过正式网址登录后，在本机执行：
+4. 家人首次通过正式网址登录后，在本机执行：
 
 ```powershell
 $env:READER_EMAIL="家人的登录邮箱"
@@ -96,7 +95,7 @@ npm run share:reader
 Remove-Item Env:READER_EMAIL
 ```
 
-该命令只授予阅读权限，不会发送邮件或调用模型。新卡邮件默认仅发送给 `OWNER_EMAIL`；家人如需邮件推送，可在后续单独加入。
+该命令只授予阅读权限，不会调用模型或发送通知。
 
 ## 验证命令
 

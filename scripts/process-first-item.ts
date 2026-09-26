@@ -1,6 +1,5 @@
 import { buildKnowledgeDraft, createSearchDocuments } from "../src/lib/pipeline";
 import { ModelResponseError } from "../src/lib/deepseek";
-import { sendKnowledgeCardEmail } from "../src/lib/email";
 import { getPrivateEnv } from "../src/lib/env";
 import { createSearchEmbedding } from "../src/lib/qwen";
 import { createServiceSupabaseClient } from "../src/lib/supabase";
@@ -39,8 +38,8 @@ async function main() {
   const owner = env.OWNER_EMAIL
     ? users.users.find((user) => user.email?.toLocaleLowerCase() === env.OWNER_EMAIL?.toLocaleLowerCase())
     : users.users.length === 1 ? users.users[0] : undefined;
-  if (!owner?.email) {
-    throw new Error("Set OWNER_EMAIL when more than one user exists, and ensure it matches a verified Supabase Auth email.");
+  if (!owner) {
+    throw new Error("Set OWNER_EMAIL when more than one user exists.");
   }
   const userId = owner.id;
   const { data: quota, error: quotaError } = await database.rpc("database_quota_status");
@@ -258,34 +257,6 @@ async function main() {
     .update({ item_id: itemId, status: "succeeded", manual_retry_required: false, error_summary: null, updated_at: new Date().toISOString() })
     .eq("id", attempt.id);
   if (attemptCompleteError) throw attemptCompleteError;
-
-  const { data: priorDelivery, error: priorDeliveryError } = await database
-    .from("notification_deliveries")
-    .select("id")
-    .eq("item_id", itemId)
-    .eq("recipient_user_id", userId)
-    .eq("channel", "email")
-    .maybeSingle();
-  if (priorDeliveryError) throw priorDeliveryError;
-  if (!priorDelivery) {
-    const cardUrl = new URL(`/item/${itemId}`, env.APP_URL).toString();
-    try {
-      const delivery = await sendKnowledgeCardEmail({ recipient: owner.email, title: ITEM.title, summaryZh: draft.summaryZh, cardUrl, sourceUrl: ITEM.canonicalUrl });
-      const { error: deliveryError } = await database.from("notification_deliveries").insert({
-        item_id: itemId, recipient_user_id: userId, channel: "email", status: delivery.status,
-        provider_message_id: "providerMessageId" in delivery ? delivery.providerMessageId : null,
-        error_summary: "error" in delivery ? delivery.error : null,
-        sent_at: delivery.status === "sent" ? new Date().toISOString() : null,
-      });
-      if (deliveryError) throw deliveryError;
-    } catch (error) {
-      const { error: deliveryError } = await database.from("notification_deliveries").insert({
-        item_id: itemId, recipient_user_id: userId, channel: "email", status: "failed",
-        error_summary: error instanceof Error ? error.message.slice(0, 500) : "Unknown email error",
-      });
-      if (deliveryError) throw deliveryError;
-    }
-  }
 
   console.log(JSON.stringify({
     ok: true,
