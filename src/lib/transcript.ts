@@ -1,5 +1,9 @@
 import type { TranscriptKind, TranscriptSegment, TranscriptSource } from "./types";
 
+const YOUTUBE_PLAYER_URL = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false";
+const YOUTUBE_CLIENT_VERSION = "20.10.38";
+const YOUTUBE_USER_AGENT = `com.google.android.youtube/${YOUTUBE_CLIENT_VERSION} (Linux; U; Android 14)`;
+
 const PRIORITY: Record<TranscriptKind, number> = {
   OS: 1,
   CC: 2,
@@ -61,6 +65,113 @@ export function parsePlainText(text: string): TranscriptSegment[] {
       paragraph: index + 1,
       text: paragraph,
     }));
+}
+
+function decodeXmlEntities(text: string) {
+  return text
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, value: string) => String.fromCodePoint(Number.parseInt(value, 16)))
+    .replace(/&#(\d+);/g, (_, value: string) => String.fromCodePoint(Number.parseInt(value, 10)));
+}
+
+export function parseYouTubeCaptionXml(xml: string): TranscriptSegment[] {
+  const segments: TranscriptSegment[] = [];
+  const timedParagraph = /<p\s+[^>]*t="(\d+)"[^>]*d="(\d+)"[^>]*>([\s\S]*?)<\/p>/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = timedParagraph.exec(xml)) !== null) {
+    const text = decodeXmlEntities(match[3].replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+    if (!text) continue;
+    const startMs = Number.parseInt(match[1], 10);
+    const durationMs = Number.parseInt(match[2], 10);
+    segments.push({
+      id: `seg-${String(segments.length + 1).padStart(5, "0")}`,
+      startMs,
+      endMs: startMs + durationMs,
+      text,
+    });
+  }
+
+  if (segments.length > 0) return segments;
+
+  const classicCaption = /<text\s+[^>]*start="([\d.]+)"[^>]*dur="([\d.]+)"[^>]*>([\s\S]*?)<\/text>/g;
+  while ((match = classicCaption.exec(xml)) !== null) {
+    const text = decodeXmlEntities(match[3].replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+    if (!text) continue;
+    const startMs = Math.round(Number.parseFloat(match[1]) * 1000);
+    const durationMs = Math.round(Number.parseFloat(match[2]) * 1000);
+    segments.push({
+      id: `seg-${String(segments.length + 1).padStart(5, "0")}`,
+      startMs,
+      endMs: startMs + durationMs,
+      text,
+    });
+  }
+  return segments;
+}
+
+type CaptionTrack = {
+  baseUrl?: string;
+  languageCode?: string;
+  kind?: string;
+};
+
+function captionPriority(track: CaptionTrack) {
+  const english = track.languageCode === "en" || track.languageCode?.startsWith("en-");
+  const automatic = track.kind === "asr";
+  if (english && !automatic) return 0;
+  if (english) return 1;
+  if (!automatic) return 2;
+  return 3;
+}
+
+export async function fetchYouTubeCaptionsTemporarily(videoId: string) {
+  if (!/^[\w-]{11}$/.test(videoId)) throw new Error("Transcript fetch failed: invalid YouTube video ID.");
+  const playerResponse = await fetch(YOUTUBE_PLAYER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "User-Agent": YOUTUBE_USER_AGENT },
+    signal: AbortSignal.timeout(30_000),
+    body: JSON.stringify({
+      context: { client: { clientName: "ANDROID", clientVersion: YOUTUBE_CLIENT_VERSION } },
+      videoId,
+    }),
+  });
+  if (!playerResponse.ok) throw new Error(`Transcript fetch failed: YouTube player returned ${playerResponse.status}.`);
+
+  const payload = await playerResponse.json() as {
+    captions?: { playerCaptionsTracklistRenderer?: { captionTracks?: CaptionTrack[] } };
+  };
+  const tracks = payload.captions?.playerCaptionsTracklistRenderer?.captionTracks ?? [];
+  const track = tracks.filter((candidate) => candidate.baseUrl).toSorted((a, b) => captionPriority(a) - captionPriority(b))[0];
+  if (!track?.baseUrl) return undefined;
+
+  const captionUrl = new URL(track.baseUrl);
+  if (captionUrl.protocol !== "https:" || !(captionUrl.hostname === "youtube.com" || captionUrl.hostname.endsWith(".youtube.com"))) {
+    throw new Error("Transcript fetch failed: YouTube returned an unexpected caption host.");
+  }
+  captionUrl.searchParams.set("fmt", "srv3");
+  const captionResponse = await fetch(captionUrl, {
+    headers: { "User-Agent": YOUTUBE_USER_AGENT },
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!captionResponse.ok) throw new Error(`Transcript fetch failed: caption download returned ${captionResponse.status}.`);
+  const segments = parseYouTubeCaptionXml(await captionResponse.text());
+  if (segments.length === 0) return undefined;
+
+  const automatic = track.kind === "asr";
+  const transcriptSource: TranscriptSource = {
+    kind: automatic ? "PLT" : "CC",
+    label: automatic ? "YouTube existing platform captions" : "YouTube creator-provided captions",
+    platform: "YouTube",
+    url: `https://www.youtube.com/watch?v=${videoId}`,
+    hasTimestamps: true,
+    verified: true,
+  };
+  return { segments, transcriptSource, languageCode: track.languageCode ?? "unknown", automatic };
 }
 
 export async function fetchTranscriptTemporarily(source: TranscriptSource) {

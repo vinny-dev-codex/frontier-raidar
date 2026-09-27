@@ -15,9 +15,13 @@ describe("source registry", () => {
     expect(new Set(channelIds).size).toBe(29);
   });
 
-  it("raises Huberman Lab while requiring external corroboration", () => {
+  it("keeps Huberman Lab high, publishes it directly, and lowers Acquired", () => {
     const huberman = SOURCES.find((source) => source.id === "huberman-lab");
-    expect(huberman?.priority).toBe(3);
-    expect(huberman?.publicationPolicy).toBe("external_corroboration_required");
+    const acquired = SOURCES.find((source) => source.id === "acquired");
+    const wayde = SOURCES.find((source) => source.id === "wayde-ai");
+    expect(huberman?.priority).toBe(2);
+    expect(huberman?.publicationPolicy).toBe("standard");
+    expect(wayde?.publicationPolicy).toBe("standard");
+    expect(acquired?.priority).toBe(10);
   });
 });

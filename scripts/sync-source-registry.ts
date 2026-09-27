@@ -7,7 +7,7 @@ async function main() {
 
   const { error: disableError } = await database
     .from("sources")
-    .update({ enabled: false })
+    .update({ enabled: false, priority: null })
     .neq("id", "");
   if (disableError) throw disableError;
 
@@ -18,9 +18,19 @@ async function main() {
     homepage: source.homepage,
     enabled: source.enabled,
     phase: source.phase,
+    priority: source.priority,
+    youtube_channel_id: source.discovery.youtubeChannelId,
+    publication_policy: source.publicationPolicy,
   }));
   const { error: upsertError } = await database.from("sources").upsert(rows, { onConflict: "id" });
   if (upsertError) throw upsertError;
+
+  const { error: releaseError } = await database
+    .from("knowledge_items")
+    .update({ status: "ready", unavailable_reason_zh: null, updated_at: new Date().toISOString() })
+    .in("source_id", ["huberman-lab", "wayde-ai"])
+    .eq("status", "pending_review");
+  if (releaseError) throw releaseError;
 
   const { data: enabled, error: verifyError } = await database
     .from("sources")

@@ -10,7 +10,7 @@
 - 未配置密钥时使用明确标记的本地演示模式，能够搜索、筛选、收藏、标记已读、导出阅读状态。
 - 每条知识卡片提供关键论点、英文证据、中文分析、中文可视化结构和原始资源的一键链接。
 - 29 个来源均已绑定唯一官方 YouTube 频道 ID；来源文档仅作为频道索引，实际采集优先官网、RSS 和已有文字材料。
-- Huberman Lab 位列第 3 优先级；健康或心理结论必须补充论文、系统综述或权威机构材料，完成交叉验证前保持待复核且不公开。
+- Huberman Lab 位列第 2 优先级；Huberman Lab 与 Wayde AI 均按标准流程直接发布，不设置额外数据门禁。Acquired 已下调到第 10。
 - CloudBase 国内读取路径已由用户及其家人在中国大陆验证可访问，并已正式合并到主分支。
 - 已实现跨平台匹配评分、证据片段校验、DeepSeek 提取接口和 Qwen 768 维嵌入接口。
 - 已提供 Supabase 数据库、来源种子数据、阅读状态、行级权限和全文/向量混合搜索迁移。
@@ -19,7 +19,7 @@
 ## 最小流程
 
 1. Discover：RSS 或官方网站只发现元数据和平台版本。
-2. Verify：只接受官方正文、官方文字稿、发布者 RSS 文稿或可验证字幕；文章只接受官方正文或官方 RSS 正文。最终规则明确禁止使用音频转录补齐内容。
+2. Verify：只接受官方正文、官方文字稿、发布者 RSS 文稿、创作者字幕或 YouTube 已存在的平台字幕；文章只接受官方正文或官方 RSS 正文。最终规则明确禁止下载音频或自行语音转录。
 3. Extract：DeepSeek 只返回论点和字幕片段 ID；程序再从原文精确复制引文，防止模型改写。
 4. Store/Search：仅保存摘要、论点、相关证据和分析；全文搜索覆盖所有保存文本，Qwen 只嵌入摘要、论点、证据组和标签。
 
@@ -73,7 +73,7 @@ npm run dev
 
 第二个迁移会记录每次 DeepSeek 与百炼调用的模型、时间、令牌数和结果，不保存密钥或完整文稿；它也提供 350 MiB 数据库预警阈值。默认每天最多成功处理 5 条知识卡片，不以填满额度为目标。失败会标记为需人工重试，只有显式设置 `FORCE_RETRY=true` 才能重试。
 
-GitHub Actions 每天在悉尼时间早晨附近运行一次自动流程：按优先级发现全部 29 个来源、验证官方正文或已有文稿、每天最多制作 5 张知识卡片（可少不可多）、保存中文证据翻译和搜索向量，然后只公开通过发布门禁的成品。无可验证文本不会调用模型或生成卡片；失败条目会停下并等待人工重试。
+GitHub Actions 每天在悉尼时间早晨附近运行一次自动流程：同步来源配置，按优先级发现全部 29 个来源，验证官方正文、已有文稿或公开视频现成字幕，每天最多制作 5 张知识卡片（可少不可多），保存中文证据翻译和搜索向量，然后直接公开成品。轮询时同一轮每个来源最多取一条，优先形成多来源批次。无可验证文本不会调用模型或生成卡片；失败条目会停下并等待人工重试。
 
 自动化需要在 GitHub 仓库 Secrets 中设置：`SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`DEEPSEEK_API_KEY`、`DASHSCOPE_API_KEY`、`YOUTUBE_API_KEY`。工作流会先运行只检查变量名称、不输出密钥值的预检。本机脚本只在 `.env.local` 存在时读取它，因此 CI 不再因缺少本机文件而启动失败。`OWNER_EMAIL` 只用于多用户数据库中定位内容所有者，不用于通知。
 
@@ -121,6 +121,6 @@ npm run discover
 
 ## 来源优先级
 
-前十名依次为：Acquired、Hidden Brain、Huberman Lab、Lenny's Podcast、Freakonomics Radio Network、Dwarkesh Patel、Stanford HAI、Google DeepMind、Stanford GSB、Y Combinator。其余 19 个来源继续按 `src/lib/sources.ts` 中的明确序号轮询。
+前十名依次为：Hidden Brain、Huberman Lab、Lenny's Podcast、Freakonomics Radio Network、Dwarkesh Patel、Stanford HAI、Google DeepMind、Stanford GSB、Y Combinator、Acquired。其余 19 个来源继续按 `src/lib/sources.ts` 中的明确序号轮询。
 
-29 个频道全部启用，但“已发现”不等于“可制作”。采集器优先使用可靠且高效的官网、RSS 或已有文字材料；YouTube 固定频道 ID 主要用于准确发现和版本核对。没有可验证文本时允许当日少于 5 张，不会用音频转录或低质量材料凑数。
+29 个频道全部启用。生产审计会检查每个频道最近 10 条内容的时长和现成字幕；截至 2026-09-27，29/29 均至少有一条符合自动制作条件。没有可验证文本时仍允许当日少于 5 张，不会用音频转录或低质量材料凑数。

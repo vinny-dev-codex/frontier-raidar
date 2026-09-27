@@ -18,7 +18,9 @@
     "rewrite:home-depot-visuals": "node --env-file-if-exists=.env.local --import tsx scripts/rewrite-home-depot-visuals.ts",
     "translate:evidence": "node --env-file-if-exists=.env.local --import tsx scripts/translate-evidence.ts",
     "cleanup:old-the-batch": "node --env-file-if-exists=.env.local --import tsx scripts/backup-and-remove-old-the-batch.ts",
-    "sources:sync": "node --env-file-if-exists=.env.local --import tsx scripts/sync-source-registry.ts"
+    "sources:sync": "node --env-file-if-exists=.env.local --import tsx scripts/sync-source-registry.ts",
+    "sources:audit": "node --env-file-if-exists=.env.local --import tsx scripts/audit-sources.ts",
+    "capacity:audit": "node --env-file-if-exists=.env.local --import tsx scripts/audit-capacity.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

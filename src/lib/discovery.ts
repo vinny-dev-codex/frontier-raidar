@@ -29,13 +29,20 @@ const parser = new Parser<Record<string, never>, FeedItem>({
   customFields: { item: [["podcast:transcript", "podcast:transcript", { keepArray: true }]] },
 });
 
-function durationToSeconds(value?: string | number) {
+function podcastDurationToSeconds(value?: string | number) {
   if (value === undefined) return undefined;
   if (typeof value === "number") return value;
   if (/^\d+$/.test(value)) return Number(value);
   const parts = value.split(":").map(Number);
   if (parts.some(Number.isNaN)) return undefined;
   return parts.reduce((total, part) => total * 60 + part, 0);
+}
+
+export function iso8601DurationToSeconds(value?: string) {
+  if (!value) return undefined;
+  const match = value.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+  if (!match) return undefined;
+  return Number(match[1] ?? 0) * 3600 + Number(match[2] ?? 0) * 60 + Number(match[3] ?? 0);
 }
 function collectTranscriptUrls(value: unknown): string[] {
   const urls = new Set<string>();
@@ -59,7 +66,7 @@ export async function discoverRss(source: SourceDefinition, limit = 20) {
       canonicalUrl: item.link,
       publishedAt: item.isoDate ?? item.pubDate,
       description: item.contentSnippet,
-      durationSeconds: durationToSeconds(item.itunes?.duration),
+      durationSeconds: podcastDurationToSeconds(item.itunes?.duration),
       platform: "Podcast RSS" as const,
       transcriptUrls: collectTranscriptUrls(item["podcast:transcript"]),
     }];
@@ -97,11 +104,20 @@ export async function discoverYouTube(source: SourceDefinition, limit = 20) {
   const uploads = detail.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
   if (!uploads) return [];
   const payload = await call("playlistItems", { part: "snippet,contentDetails", playlistId: uploads, maxResults: String(limit) }) as { items?: { contentDetails?: { videoId?: string; videoPublishedAt?: string }; snippet?: { title?: string; description?: string; publishedAt?: string } }[] };
+  const videoIds = (payload.items ?? []).flatMap((item) => item.contentDetails?.videoId ? [item.contentDetails.videoId] : []);
+  const durations = new Map<string, number>();
+  if (videoIds.length > 0) {
+    const details = await call("videos", { part: "contentDetails", id: videoIds.join(",") }) as { items?: { id?: string; contentDetails?: { duration?: string } }[] };
+    for (const video of details.items ?? []) {
+      const seconds = iso8601DurationToSeconds(video.contentDetails?.duration);
+      if (video.id && seconds !== undefined) durations.set(video.id, seconds);
+    }
+  }
   return (payload.items ?? []).flatMap((item) => {
     const videoId = item.contentDetails?.videoId;
     const title = item.snippet?.title?.trim();
     if (!videoId || !title) return [];
-    return [{ externalId: videoId, sourceId: source.id, title, canonicalUrl: `https://www.youtube.com/watch?v=${videoId}`, publishedAt: item.contentDetails?.videoPublishedAt ?? item.snippet?.publishedAt, description: item.snippet?.description, platform: "YouTube" as const, transcriptUrls: [] }];
+    return [{ externalId: videoId, sourceId: source.id, title, canonicalUrl: `https://www.youtube.com/watch?v=${videoId}`, publishedAt: item.contentDetails?.videoPublishedAt ?? item.snippet?.publishedAt, description: item.snippet?.description, durationSeconds: durations.get(videoId), platform: "YouTube" as const, transcriptUrls: [] }];
   });
 }
 

@@ -4,52 +4,52 @@ type SourceEntry = Omit<SourceDefinition, "enabled" | "phase">;
 
 const entries: SourceEntry[] = [
   {
-    id: "acquired", name: "Acquired", category: "公司史与战略", kinds: ["video", "podcast"], priority: 1,
+    id: "acquired", name: "Acquired", category: "公司史与战略", kinds: ["video", "podcast"], priority: 10,
     homepage: "https://www.acquired.fm/", discovery: { website: "https://www.acquired.fm/", rss: "https://feeds.transistor.fm/acquired", youtubeChannelId: "UCyFqFYfTW2VoIQKylJ04Rtw" },
     collectionOrder: ["rss", "website", "youtube"], publicationPolicy: "standard", transcriptNotes: "优先官方 RSS 文字稿和官网 Show Notes；YouTube 仅用于发现与版本核对。",
   },
   {
-    id: "hidden-brain", name: "Hidden Brain", category: "心理学与决策", kinds: ["video", "podcast"], priority: 2,
+    id: "hidden-brain", name: "Hidden Brain", category: "心理学与决策", kinds: ["video", "podcast"], priority: 1,
     homepage: "https://www.hiddenbrain.org/", discovery: { website: "https://www.hiddenbrain.org/", rss: "https://feeds.simplecast.com/kwWc0lhf", youtubeChannelId: "UCgjZeiV0Ks3Shx8xPgvm7pQ" },
     collectionOrder: ["rss", "website", "youtube"], publicationPolicy: "standard", transcriptNotes: "优先官方节目页和 Podcast 文字稿；心理学结论保留研究限定。",
   },
   {
-    id: "huberman-lab", name: "Huberman Lab", category: "神经科学与健康", kinds: ["video", "podcast"], priority: 3,
+    id: "huberman-lab", name: "Huberman Lab", category: "神经科学与健康", kinds: ["video", "podcast"], priority: 2,
     homepage: "https://www.hubermanlab.com/", discovery: { website: "https://www.hubermanlab.com/", youtubeChannelId: "UC2D2CMWXMOVWx7giW1n3LIg" },
-    collectionOrder: ["website", "youtube"], publicationPolicy: "external_corroboration_required", transcriptNotes: "高优先级线索源；健康结论必须增加论文、系统综述或权威机构材料，完成交叉验证前不得公开。",
+    collectionOrder: ["website", "youtube"], publicationPolicy: "standard", transcriptNotes: "高优先级来源；优先官网文字稿或公开视频已有字幕，按标准流程直接发布。",
   },
   {
-    id: "lennys-podcast", name: "Lenny's Podcast", category: "产品与增长", kinds: ["video", "podcast"], priority: 4,
+    id: "lennys-podcast", name: "Lenny's Podcast", category: "产品与增长", kinds: ["video", "podcast"], priority: 3,
     homepage: "https://www.lennyspodcast.com/", discovery: { website: "https://www.lennyspodcast.com/", youtubeChannelId: "UC6t1O76G0jYXOAoYCm153dA" },
     collectionOrder: ["website", "youtube"], publicationPolicy: "standard", transcriptNotes: "优先官方节目页和已有文字稿；抽取框架、实例与可验证指标。",
   },
   {
-    id: "freakonomics-radio", name: "Freakonomics Radio Network", category: "行为经济与公共政策", kinds: ["video", "podcast"], priority: 5,
+    id: "freakonomics-radio", name: "Freakonomics Radio Network", category: "行为经济与公共政策", kinds: ["video", "podcast"], priority: 4,
     homepage: "https://freakonomics.com/", discovery: { website: "https://freakonomics.com/", youtubeChannelId: "UCXjf7anLJA4NqUv8kPFIJWA" },
     collectionOrder: ["website", "youtube"], publicationPolicy: "standard", transcriptNotes: "优先官方节目文稿，视频仅作发现和版本补充。",
   },
   {
-    id: "dwarkesh-patel", name: "Dwarkesh Patel", category: "AI 前沿访谈", kinds: ["video", "podcast"], priority: 6,
+    id: "dwarkesh-patel", name: "Dwarkesh Patel", category: "AI 前沿访谈", kinds: ["video", "podcast"], priority: 5,
     homepage: "https://www.dwarkesh.com/", discovery: { website: "https://www.dwarkesh.com/", youtubeChannelId: "UCXl4i9dYBrFOabk0xGmbkRA" },
     collectionOrder: ["website", "youtube"], publicationPolicy: "standard", transcriptNotes: "优先官网完整文字稿；YouTube 用于发布时间和视频版本核对。",
   },
   {
-    id: "stanford-hai", name: "Stanford HAI", category: "AI 研究与治理", kinds: ["video"], priority: 7,
+    id: "stanford-hai", name: "Stanford HAI", category: "AI 研究与治理", kinds: ["video"], priority: 6,
     homepage: "https://hai.stanford.edu/", discovery: { website: "https://hai.stanford.edu/", youtubeChannelId: "UChugFTK0KyrES9terTid8vA" },
     collectionOrder: ["website", "youtube"], publicationPolicy: "standard", transcriptNotes: "优先机构原始材料、论文和完整活动视频。",
   },
   {
-    id: "google-deepmind", name: "Google DeepMind", category: "AI 研究", kinds: ["video"], priority: 8,
+    id: "google-deepmind", name: "Google DeepMind", category: "AI 研究", kinds: ["video"], priority: 7,
     homepage: "https://deepmind.google/", discovery: { website: "https://deepmind.google/", youtubeChannelId: "UCP7jMXSY2xbc3KCAE0MHQ-A" },
     collectionOrder: ["website", "youtube"], publicationPolicy: "standard", transcriptNotes: "优先研究页面和完整长视频，关键结论回链论文或模型卡。",
   },
   {
-    id: "stanford-gsb", name: "Stanford Graduate School of Business", category: "管理与组织", kinds: ["video"], priority: 9,
+    id: "stanford-gsb", name: "Stanford Graduate School of Business", category: "管理与组织", kinds: ["video"], priority: 8,
     homepage: "https://www.gsb.stanford.edu/", discovery: { website: "https://www.gsb.stanford.edu/", youtubeChannelId: "UCGwuxdEeCf0TIA2RbPOj-8g" },
     collectionOrder: ["website", "youtube"], publicationPolicy: "standard", transcriptNotes: "优先官方讲座、访谈与研究页面。",
   },
   {
-    id: "y-combinator", name: "Y Combinator", category: "创业与产品", kinds: ["video"], priority: 10,
+    id: "y-combinator", name: "Y Combinator", category: "创业与产品", kinds: ["video"], priority: 9,
     homepage: "https://www.ycombinator.com/library", discovery: { website: "https://www.ycombinator.com/library", youtubeChannelId: "UCcefcZRL2oaA_uBNeo5UOWg" },
     collectionOrder: ["website", "youtube"], publicationPolicy: "standard", transcriptNotes: "排除活动宣传，优先创始人访谈、课程和官方资料。",
   },
@@ -121,7 +121,7 @@ const entries: SourceEntry[] = [
   {
     id: "wayde-ai", name: "Wayde AI", category: "AI 与心理学", kinds: ["video", "podcast"], priority: 24,
     homepage: "https://www.youtube.com/channel/UC8kfx6xEt6NAvn8A9Q_wAGw", discovery: { youtubeChannelId: "UC8kfx6xEt6NAvn8A9Q_wAGw" },
-    collectionOrder: ["youtube"], publicationPolicy: "external_corroboration_required", transcriptNotes: "心理健康结论必须增加论文、系统综述或权威报告，验证前不得公开。",
+    collectionOrder: ["youtube"], publicationPolicy: "standard", transcriptNotes: "优先公开视频已有字幕，按标准流程直接发布。",
   },
   {
     id: "ali-abdaal", name: "Ali Abdaal", category: "学习与生产力", kinds: ["video"], priority: 25,
@@ -150,7 +150,7 @@ const entries: SourceEntry[] = [
   },
 ];
 
-export const SOURCES: SourceDefinition[] = entries.map((entry) => ({
+export const SOURCES: SourceDefinition[] = entries.toSorted((a, b) => a.priority - b.priority).map((entry) => ({
   ...entry,
   enabled: true,
   phase: entry.priority <= 10 ? 1 : 2,

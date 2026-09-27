@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { nextTranscriptRetry, parsePlainText, parseVtt, selectTranscriptSource } from "./transcript";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { fetchYouTubeCaptionsTemporarily, nextTranscriptRetry, parsePlainText, parseVtt, parseYouTubeCaptionXml, selectTranscriptSource } from "./transcript";
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe("transcript policy", () => {
   it("selects official transcript before CC and RSS", () => {
@@ -33,5 +35,21 @@ describe("transcript parsing", () => {
 
   it("turns plain text paragraphs into addressable segments", () => {
     expect(parsePlainText("First paragraph.\n\nSecond paragraph.")).toHaveLength(2);
+  });
+
+  it("parses YouTube timed-text XML", () => {
+    expect(parseYouTubeCaptionXml('<timedtext><body><p t="1000" d="2500">Hello &amp; world.</p></body></timedtext>')[0])
+      .toMatchObject({ text: "Hello & world.", startMs: 1000, endMs: 3500 });
+  });
+
+  it("uses existing YouTube captions without audio transcription", async () => {
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ captions: { playerCaptionsTracklistRenderer: { captionTracks: [
+        { languageCode: "en", baseUrl: "https://www.youtube.com/api/timedtext?v=video-id001" },
+      ] } } }), { status: 200 }))
+      .mockResolvedValueOnce(new Response('<timedtext><body><p t="0" d="1000">Existing caption.</p></body></timedtext>', { status: 200 })));
+    const result = await fetchYouTubeCaptionsTemporarily("video-id001");
+    expect(result?.transcriptSource.kind).toBe("CC");
+    expect(result?.segments[0]?.text).toBe("Existing caption.");
   });
 });

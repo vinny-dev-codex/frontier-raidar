@@ -8,8 +8,8 @@
 
 - 正式来源已经从旧的 12 个切换为 29 个；用户提供的 DOCX 只作为频道索引，实际采集应选择可靠、高效的官网、RSS、官方文字稿或可验证字幕。
 - 29 个来源均已绑定唯一官方 YouTube 频道 ID，避免按名称搜索导致串台。
-- 来源按 1–29 严格排序。前十名是 Acquired、Hidden Brain、Huberman Lab、Lenny's Podcast、Freakonomics Radio Network、Dwarkesh Patel、Stanford HAI、Google DeepMind、Stanford GSB、Y Combinator。
-- Huberman Lab 提升到第 3 优先级；健康或心理结论必须补充论文、系统综述或权威机构材料。交叉验证未完成时卡片只能处于 `pending_review`，不能公开。
+- 来源按 1–29 严格排序。前十名是 Hidden Brain、Huberman Lab、Lenny's Podcast、Freakonomics Radio Network、Dwarkesh Patel、Stanford HAI、Google DeepMind、Stanford GSB、Y Combinator、Acquired。
+- Huberman Lab 位列第 2，Acquired 下调到第 10；Huberman Lab 与 Wayde AI 均按标准流程直接发布，不设置额外数据门禁。
 - 每个 UTC 日最多制作 5 张卡片，可少不可多。代码把环境变量限制在最多 5，不能由部署配置调高。
 - 文字材料只接受官方正文、官方文字稿、发布者 RSS 文稿或可验证字幕。最终决定明确禁止音频转录。
 - 中文证据翻译继续保留；DeepSeek 负责提取和翻译，Qwen Embedding 继续负责 768 维精选文本向量。
@@ -24,13 +24,13 @@
 - GitHub Actions 已改用 `--env-file-if-exists=.env.local`，避免 CI 因不存在本机文件而启动失败；运行前会检查五个必需变量，并传入 `YOUTUBE_API_KEY`。
 - 自动发现会遍历全部 29 个启用来源并按优先级轮询；同一轮每个来源最多取一条，避免一天五张全部来自同一频道。
 - 无可验证文字材料时不调用模型，也不为了填满 5 张而降低标准。
-- 页面显示 29 个来源及其采集顺序。Huberman Lab 和 Wayde AI 使用额外证据发布门禁。
+- 页面显示 29 个来源及其采集顺序。全部来源通过原文证据校验后直接发布。
 - CloudBase 静态导出通过只读云函数访问 Supabase；浏览器不持有 Supabase 地址或密钥。
 - 最近一次本地验证：类型检查通过，22 项测试通过，Lint 通过，Next.js 生产构建通过。
 
 ## 数据库与运行态待核对
 
-- 新迁移：`supabase/migrations/202609270006_switch_to_29_sources.sql`。它停用旧来源、启用 29 个正式来源、写入优先级和频道 ID，并删除邮件投递表。
+- 新迁移：`supabase/migrations/202609270007_rebalance_sources.sql`。它调整优先级并移除 Huberman Lab 与 Wayde AI 的旧发布门禁。
 - 旧库中曾有两条 The Batch 半成品和一条悬空 Acquired 处理记录。执行删除前必须先备份到 `E:\AI\Codex\FrontierRadar\backups`，然后按已核对的精确 ID 清理，不能模糊删除。
 - GitHub 仓库 Secrets 必须包含 `SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`DEEPSEEK_API_KEY`、`DASHSCOPE_API_KEY`、`YOUTUBE_API_KEY`。推送后应手动运行一次 Actions 并检查预检和自动化日志。
 

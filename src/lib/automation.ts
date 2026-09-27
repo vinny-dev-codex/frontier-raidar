@@ -3,13 +3,13 @@ import { ModelResponseError } from "./deepseek";
 import { discoverSource, type DiscoveredEntry } from "./discovery";
 import { getPrivateEnv } from "./env";
 import { buildKnowledgeDraft, createSearchDocuments } from "./pipeline";
-import { createSearchEmbedding } from "./qwen";
+import { createSearchEmbeddings } from "./qwen";
 import { SOURCES } from "./sources";
 import { createServiceSupabaseClient } from "./supabase";
-import { fetchTranscriptTemporarily } from "./transcript";
+import { fetchTranscriptTemporarily, fetchYouTubeCaptionsTemporarily } from "./transcript";
 import { translateEvidenceBatchToChinese } from "./translation";
 import type { ContentKind, Evidence, SourceDefinition, TranscriptSegment, TranscriptSource } from "./types";
-import { dailyCardLimit } from "./workflow-policy";
+import { dailyCardLimit, startOfSydneyDay } from "./workflow-policy";
 
 type Candidate = {
   entry: DiscoveredEntry;
@@ -68,8 +68,7 @@ async function canProcessToday(database: NonNullable<ReturnType<typeof createSer
     throw new Error(`Supabase database warning threshold reached (${quotaStatus.database_bytes} bytes).`);
   }
 
-  const startOfDay = new Date();
-  startOfDay.setUTCHours(0, 0, 0, 0);
+  const startOfDay = startOfSydneyDay();
   const dailyLimit = dailyCardLimit(process.env.DAILY_PROCESS_LIMIT);
   const { count, error } = await database
     .from("processing_attempts")
@@ -94,6 +93,21 @@ async function prepareCandidate(entry: DiscoveredEntry, source: SourceDefinition
     const segments = await fetchTranscriptTemporarily(transcriptSource);
     if (segments.length === 0) return undefined;
     return { entry, source, kind: "podcast", transcriptSource, segments };
+  }
+
+  if (entry.platform === "YouTube") {
+    if (entry.durationSeconds !== undefined && entry.durationSeconds < 8 * 60) return undefined;
+    const captions = await fetchYouTubeCaptionsTemporarily(entry.externalId);
+    if (!captions) return undefined;
+    const sourceCharacters = captions.segments.reduce((total, segment) => total + segment.text.length, 0);
+    if (sourceCharacters < 2_000) return undefined;
+    return {
+      entry,
+      source,
+      kind: "video",
+      transcriptSource: captions.transcriptSource,
+      segments: captions.segments,
+    };
   }
 
   if (entry.platform === "Official Website" && source.kinds.includes("article")) {
@@ -356,8 +370,10 @@ async function processCandidate(
     if (visualsError) throw visualsError;
 
     const searchRows = [];
-    for (const document of createSearchDocuments(draft)) {
-      const embeddingResult = await createSearchEmbedding(document.content);
+    const documents = createSearchDocuments(draft);
+    for (let index = 0; index < documents.length; index += 20) {
+      const batch = documents.slice(index, index + 20);
+      const embeddingResult = await createSearchEmbeddings(batch.map((document) => document.content));
       await recordUsage({
         provider: "dashscope",
         model: getPrivateEnv().QWEN_EMBEDDING_MODEL,
@@ -367,25 +383,22 @@ async function processCandidate(
         promptTokens: embeddingResult.usage.promptTokens,
         totalTokens: embeddingResult.usage.totalTokens,
       });
-      searchRows.push({
+      searchRows.push(...batch.map((document, batchIndex) => ({
         item_id: itemId,
         document_type: document.documentType,
         reference_id: document.referenceId,
         content: document.content,
-        embedding: embeddingResult.embedding,
-      });
+        embedding: embeddingResult.embeddings[batchIndex],
+      })));
     }
     const { error: searchError } = await database.from("search_documents").insert(searchRows);
     if (searchError) throw searchError;
 
-    const requiresCorroboration = source.publicationPolicy === "external_corroboration_required";
     const { error: publishError } = await database
       .from("knowledge_items")
       .update({
-        status: requiresCorroboration ? "pending_review" : "ready",
-        unavailable_reason_zh: requiresCorroboration
-          ? "该来源涉及健康或心理结论；需补充论文、系统综述或权威机构材料并完成交叉验证后才能公开。"
-          : null,
+        status: "ready",
+        unavailable_reason_zh: null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", itemId);
@@ -400,7 +413,7 @@ async function processCandidate(
     return {
       itemId,
       title: entry.title,
-      status: requiresCorroboration ? "pending_review" : "ready",
+      status: "ready",
       segments: segments.length,
       claims: draft.claims.length,
       evidence: storedEvidence.length,

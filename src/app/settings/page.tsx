@@ -43,7 +43,7 @@ export default function SettingsPage() {
           <article><strong>低存储</strong><p>不永久保存音视频或完整文稿，只保存相关证据和分析结果。</p></article>
           <article><strong>轻量搜索</strong><p>全文搜索覆盖保存文本，向量只处理摘要、论点、证据组和标签。</p></article>
           <article><strong>成本上限</strong><p>每天最多制作 5 张知识卡片，可少不可多；未满 5 张时不补足，失败不会自动重试。</p></article>
-          <article><strong>发布与通知</strong><p>Huberman Lab 等健康来源需额外证据才能公开；最终决定是不发送邮件通知。</p></article>
+          <article><strong>发布与通知</strong><p>所有来源通过原文证据校验后直接发布，包括 Huberman Lab 与 Wayde AI；最终决定是不发送邮件通知。</p></article>
           <article><strong>额度预警</strong><p>数据库达到 350 MiB 时暂停处理，避免撞到 Free 方案 500 MB 上限。</p></article>
         </div>
       </section>
