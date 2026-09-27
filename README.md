@@ -1,6 +1,6 @@
 # Frontier Radar
 
-面向个人学习的低成本前沿信息库。它从 12 个权威来源发现文章、访谈和播客，跨平台合并同一内容，并且只在取得可验证原文、字幕或文稿后生成中文摘要、关键论点、英文原文证据、拓展分析和中文图表结构。
+面向个人学习的低成本前沿信息库。它从 29 个正式来源发现文章、访谈和播客，并且只在取得可验证原文、字幕或文稿后生成中文摘要、关键论点、英文原文与中文译文证据、拓展分析和中文图表结构。
 
 ## 当前状态
 
@@ -9,8 +9,9 @@
 - 已完成 Today、Library、Detail、Sources、Settings 五个页面和 PWA 外壳。
 - 未配置密钥时使用明确标记的本地演示模式，能够搜索、筛选、收藏、标记已读、导出阅读状态。
 - 每条知识卡片提供关键论点、英文证据、中文分析、中文可视化结构和原始资源的一键链接。
-- 已登记 12 个来源。
-- 首轮发现已接入 The Batch、Acquired、Hidden Brain。
+- 29 个来源均已绑定唯一官方 YouTube 频道 ID；来源文档仅作为频道索引，实际采集优先官网、RSS 和已有文字材料。
+- Huberman Lab 位列第 3 优先级；健康或心理结论必须补充论文、系统综述或权威机构材料，完成交叉验证前保持待复核且不公开。
+- CloudBase 国内读取路径已由用户及其家人在中国大陆验证可访问，并已正式合并到主分支。
 - 已实现跨平台匹配评分、证据片段校验、DeepSeek 提取接口和 Qwen 768 维嵌入接口。
 - 已提供 Supabase 数据库、来源种子数据、阅读状态、行级权限和全文/向量混合搜索迁移。
 - 页面中的示例内容均明确标记为 Prototype Demonstration，并非真实抓取结果。
@@ -18,7 +19,7 @@
 ## 最小流程
 
 1. Discover：RSS 或官方网站只发现元数据和平台版本。
-2. Verify：按 OS → CC → RSS → PLT → EXT 顺序寻找可验证字幕；文章只接受官方正文或官方 RSS 正文。若仍缺少文字稿，可对用户有权访问的公开内容使用临时音频流转录，完成后立即删除临时媒体数据。
+2. Verify：只接受官方正文、官方文字稿、发布者 RSS 文稿或可验证字幕；文章只接受官方正文或官方 RSS 正文。最终规则明确禁止使用音频转录补齐内容。
 3. Extract：DeepSeek 只返回论点和字幕片段 ID；程序再从原文精确复制引文，防止模型改写。
 4. Store/Search：仅保存摘要、论点、相关证据和分析；全文搜索覆盖所有保存文本，Qwen 只嵌入摘要、论点、证据组和标签。
 
@@ -43,7 +44,7 @@ npm run dev
 - `/`：今日优先阅读与处理队列。
 - `/library`：关键词、状态、来源、主题、收藏和排序组合筛选。
 - `/item/<id>`：摘要、5–10 个关键论点、精确原文证据、分析和图表。
-- `/sources`：12 个来源及验证状态。
+- `/sources`：29 个来源、采集顺序、优先级和发布门禁。
 - `/settings`：服务连接、处理规则和本地阅读数据。
 - `/api/health`、`/api/items`、`/api/sources`：运行状态和只读数据接口。
 
@@ -72,9 +73,9 @@ npm run dev
 
 第二个迁移会记录每次 DeepSeek 与百炼调用的模型、时间、令牌数和结果，不保存密钥或完整文稿；它也提供 350 MiB 数据库预警阈值。默认每天最多成功处理 5 条知识卡片，不以填满额度为目标。失败会标记为需人工重试，只有显式设置 `FORCE_RETRY=true` 才能重试。
 
-GitHub Actions 每天在悉尼时间早晨附近运行一次自动流程：发现第一阶段来源、验证官方正文或官方 RSS 文稿、最多制作一张知识卡片、保存中文证据翻译和搜索向量，然后公开成品。无原文不会调用模型或生成卡片；失败条目会停下并等待人工重试。
+GitHub Actions 每天在悉尼时间早晨附近运行一次自动流程：按优先级发现全部 29 个来源、验证官方正文或已有文稿、每天最多制作 5 张知识卡片（可少不可多）、保存中文证据翻译和搜索向量，然后只公开通过发布门禁的成品。无可验证文本不会调用模型或生成卡片；失败条目会停下并等待人工重试。
 
-自动化需要在 GitHub 仓库 Secrets 中设置：`SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`DEEPSEEK_API_KEY`、`DASHSCOPE_API_KEY`。模型和基础地址沿用代码的默认值；已有知识卡片会自动确定归属用户，只有项目中存在多个归属用户时才需要 `OWNER_EMAIL`。这些密钥只供 GitHub Actions 使用，绝不写入代码或浏览器。
+自动化需要在 GitHub 仓库 Secrets 中设置：`SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`DEEPSEEK_API_KEY`、`DASHSCOPE_API_KEY`、`YOUTUBE_API_KEY`。工作流会先运行只检查变量名称、不输出密钥值的预检。本机脚本只在 `.env.local` 存在时读取它，因此 CI 不再因缺少本机文件而启动失败。`OWNER_EMAIL` 只用于多用户数据库中定位内容所有者，不用于通知。
 
 最后执行：
 
@@ -88,6 +89,12 @@ GitHub Actions 每天在悉尼时间早晨附近运行一次自动流程：发�
 
 每张卡片的全部英文证据会在制作时一次性译为中文并保存。网页只显示已保存译文，不会因访客点击而重复调用模型。
 
+最后执行：
+
+`supabase/migrations/202609270006_switch_to_29_sources.sql`
+
+这条迁移会停用旧来源、启用带固定优先级和官方频道 ID 的 29 个正式来源，并删除旧的邮件投递表。最终决定是不发送邮件通知。
+
 ## 上线与分享
 
 采用最小部署：Vercel 托管网站，Supabase 托管数据。任何拿到链接的人都可直接阅读，不需要登录。
@@ -96,9 +103,9 @@ GitHub Actions 每天在悉尼时间早晨附近运行一次自动流程：发�
 2. 在 Vercel 环境变量中填写 `NEXT_PUBLIC_SUPABASE_URL` 与 `NEXT_PUBLIC_SUPABASE_ANON_KEY`。
 3. 执行公开读取迁移后，直接把 Vercel 网址分享给家人。
 
-### 中国大陆访问测试（CloudBase）
+### 中国大陆访问（CloudBase）
 
-为验证大陆网络可用性，仓库提供了一条与 Vercel 隔离的 CloudBase 测试路径：静态网页通过 CloudBase 云函数读取现有 Supabase 公开知识库，浏览器不会直连 Supabase。完整部署、密钥边界、验收和回退说明见 [CloudBase 国内访问测试](docs/cloudbase-domestic-test.md)。
+仓库提供一条与 Vercel 隔离的 CloudBase 路径：静态网页通过 CloudBase 云函数读取现有 Supabase 公开知识库，浏览器不会直连 Supabase。该路径已经过中国大陆实机访问确认。完整部署、密钥边界、验收和回退说明见 [CloudBase 国内访问说明](docs/cloudbase-domestic-test.md)。
 
 ## 验证命令
 
@@ -112,10 +119,8 @@ npm run discover
 
 `npm run discover` 是只读 dry run，只把发现结果打印到终端，不会下载音视频或永久保存全文。
 
-## 来源阶段
+## 来源优先级
 
-第一阶段：The Batch、Acquired、Hidden Brain。
+前十名依次为：Acquired、Hidden Brain、Huberman Lab、Lenny's Podcast、Freakonomics Radio Network、Dwarkesh Patel、Stanford HAI、Google DeepMind、Stanford GSB、Y Combinator。其余 19 个来源继续按 `src/lib/sources.ts` 中的明确序号轮询。
 
-第二阶段：One Useful Thing、MIT Technology Review、Bloomberg Primer、Stanford GSB View From The Top、HBR IdeaCast、Knowledge at Wharton、Lenny’s Podcast、Speaking of Psychology、Freakonomics Radio。
-
-第二阶段不会因为“已登记”就自动宣称可用；每个入口和字幕规则必须单独验证后才进入生产抓取。
+29 个频道全部启用，但“已发现”不等于“可制作”。采集器优先使用可靠且高效的官网、RSS 或已有文字材料；YouTube 固定频道 ID 主要用于准确发现和版本核对。没有可验证文本时允许当日少于 5 张，不会用音频转录或低质量材料凑数。

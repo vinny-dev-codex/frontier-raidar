@@ -1,4 +1,3 @@
-import * as cheerio from "cheerio";
 import Parser from "rss-parser";
 import { getPrivateEnv } from "./env";
 import type { SourceDefinition } from "./types";
@@ -66,38 +65,6 @@ export async function discoverRss(source: SourceDefinition, limit = 20) {
     }];
   });
 }
-export async function discoverTheBatch(source: SourceDefinition, limit = 20) {
-  const response = await fetch(source.homepage, {
-    headers: { "User-Agent": "FrontierRadar/0.1 (+personal knowledge reader)" },
-  });
-  if (!response.ok) throw new Error(`The Batch discovery failed with ${response.status}.`);
-  const $ = cheerio.load(await response.text());
-  const found = new Map<string, DiscoveredEntry>();
-
-  $("a[href]").each((_, element) => {
-    const rawHref = $(element).attr("href");
-    const title = $(element).attr("aria-label")?.trim()
-      || $(element).find("h2,h3,h4").first().text().trim()
-      || $(element).text().trim();
-    if (!rawHref || !title || title.length < 12) return;
-    const url = new URL(rawHref, source.homepage);
-    if (!/^\/the-batch\/issue-\d+\/?$/.test(url.pathname)) return;
-    url.hash = "";
-    const canonicalUrl = url.toString();
-    if (!found.has(canonicalUrl)) {
-      found.set(canonicalUrl, {
-        externalId: canonicalUrl,
-        sourceId: source.id,
-        title: title.replace(/\s+/g, " ").slice(0, 300),
-        canonicalUrl,
-        platform: "Official Website",
-        transcriptUrls: [],
-      });
-    }
-  });
-  return [...found.values()].slice(0, limit);
-}
-
 export async function discoverSource(source: SourceDefinition, limit = 20) {
   const failures: string[] = [];
   for (const method of source.collectionOrder) {

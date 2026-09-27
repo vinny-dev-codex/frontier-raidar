@@ -1,6 +1,6 @@
-# CloudBase 国内访问测试
+# CloudBase 国内访问说明
 
-此目录只提供一个可回退的测试路径：CloudBase 静态网页调用 CloudBase 云函数，云函数再以服务端凭据从现有 Supabase 公开知识库读取固定字段。Vercel 和 GitHub Actions 不需要修改。
+该路径已经由用户及其家人在中国大陆实机验证可访问，并已合并到主分支。CloudBase 静态网页调用 CloudBase 云函数，云函数再以服务端凭据从现有 Supabase 公开知识库读取固定字段；Vercel 和 GitHub Actions 保持独立，不需要修改。
 
 > 默认 `*.tcloudbaseapp.com` 与 HTTP 网关默认域名仅用于开发测试。不要把它作为长期公开链接；长期稳定运行应先准备已备案的自定义域名。
 

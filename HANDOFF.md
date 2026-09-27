@@ -1,60 +1,45 @@
 # Frontier Radar 项目续接说明
 
-## 项目目标
+## 当前目标
 
-继续完成一个供个人学习使用的低成本前沿信息 PWA：追踪商业、AI、科技、心理、社会与未来趋势中的可信来源，发现新内容，并只在取得可验证原文后生成可追溯的知识卡片。项目是个人信息库，不是创业/商业化项目。
+维护一个供个人学习使用的低成本前沿信息 PWA：从正式来源发现内容，只在取得可验证文字材料后制作可追溯的中文知识卡片，并通过 Vercel 或 CloudBase 供家人只读访问。
 
-## 目前项目位置与迁移
+## 已确认且不可再沿用旧说法的决定
 
-- 当前工作目录：`C:\Users\35467\Documents\ChatGPT\爬信息工作流 2`
-- 原项目目录：`E:\AI\Codex\FrontierRadar`（原目录保留，没有删除或修改）
-- 本文件夹现已包含原项目源码、配置、文档、数据库迁移、演示数据和工作流。
-- 当前文件夹原有空 Git 仓库保留；原项目也没有提交记录或远程仓库。源码文件已迁入，但未复制 `.git`、`node_modules`、`.next`。依赖与构建产物可重建。
-- 原项目 `.env.local` 不存在；没有复制任何 API 密钥。`.env.example` 已迁入。
+- 正式来源已经从旧的 12 个切换为 29 个；用户提供的 DOCX 只作为频道索引，实际采集应选择可靠、高效的官网、RSS、官方文字稿或可验证字幕。
+- 29 个来源均已绑定唯一官方 YouTube 频道 ID，避免按名称搜索导致串台。
+- 来源按 1–29 严格排序。前十名是 Acquired、Hidden Brain、Huberman Lab、Lenny's Podcast、Freakonomics Radio Network、Dwarkesh Patel、Stanford HAI、Google DeepMind、Stanford GSB、Y Combinator。
+- Huberman Lab 提升到第 3 优先级；健康或心理结论必须补充论文、系统综述或权威机构材料。交叉验证未完成时卡片只能处于 `pending_review`，不能公开。
+- 每个 UTC 日最多制作 5 张卡片，可少不可多。代码把环境变量限制在最多 5，不能由部署配置调高。
+- 文字材料只接受官方正文、官方文字稿、发布者 RSS 文稿或可验证字幕。最终决定明确禁止音频转录。
+- 中文证据翻译继续保留；DeepSeek 负责提取和翻译，Qwen Embedding 继续负责 768 维精选文本向量。
+- 最终决定是不发送邮件通知。`OWNER_EMAIL` 只用于多用户 Supabase 中定位内容所有者；新迁移会删除旧的邮件投递表。
+- CloudBase 路径已由用户及其家人在中国大陆验证可访问，分支已经正式合并到 `main`。Vercel 路径继续保留，两者共用 Supabase 公开成品库。
 
-## 两个旧任务
+## 当前实现状态
 
-- 产品可行性与信息结构讨论：[分析个人前沿资讯APP可行性](codex://threads/01a0af84-402f-7c12-a1d1-d2223522ff79)
-- 应用实现与后续接入：[旧开发任务](codex://threads/01a0bbea-1e39-7380-8d0c-ff0c2b4923e5)
+- `main` 已包含 29 来源工作流和 CloudBase 国内访问实现。
+- `src/lib/sources.ts` 是来源、优先级、固定频道 ID、采集顺序和发布门禁的唯一代码事实来源。
+- `src/lib/workflow-policy.ts` 锁定每日上限 5、禁音频转录、禁邮件投递。
+- GitHub Actions 已改用 `--env-file-if-exists=.env.local`，避免 CI 因不存在本机文件而启动失败；运行前会检查五个必需变量，并传入 `YOUTUBE_API_KEY`。
+- 自动发现会遍历全部 29 个启用来源并按优先级轮询；同一轮每个来源最多取一条，避免一天五张全部来自同一频道。
+- 无可验证文字材料时不调用模型，也不为了填满 5 张而降低标准。
+- 页面显示 29 个来源及其采集顺序。Huberman Lab 和 Wayde AI 使用额外证据发布门禁。
+- CloudBase 静态导出通过只读云函数访问 Supabase；浏览器不持有 Supabase 地址或密钥。
+- 最近一次本地验证：类型检查通过，22 项测试通过，Lint 通过，Next.js 生产构建通过。
 
-后续以用户最后确认并已落入当前代码/实现的决定为准；早期讨论中已被修改的选项不再视为当前要求。
+## 数据库与运行态待核对
 
-## 已确认的产品规则
+- 新迁移：`supabase/migrations/202609270006_switch_to_29_sources.sql`。它停用旧来源、启用 29 个正式来源、写入优先级和频道 ID，并删除邮件投递表。
+- 旧库中曾有两条 The Batch 半成品和一条悬空 Acquired 处理记录。执行删除前必须先备份到 `E:\AI\Codex\FrontierRadar\backups`，然后按已核对的精确 ID 清理，不能模糊删除。
+- GitHub 仓库 Secrets 必须包含 `SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`DEEPSEEK_API_KEY`、`DASHSCOPE_API_KEY`、`YOUTUBE_API_KEY`。推送后应手动运行一次 Actions 并检查预检和自动化日志。
 
-- 首批 12 个来源：The Batch、One Useful Thing、MIT Technology Review、Bloomberg Primer、Stanford GSB View From The Top、HBR IdeaCast、Knowledge at Wharton、Acquired、Lenny’s Podcast、Hidden Brain、Speaking of Psychology、Freakonomics Radio。
-- 首阶段真实发现已接入 The Batch、Acquired、Hidden Brain；其余来源登记后仍需逐个验证入口和文稿可用性。
-- 内容发现可来自官方站点、Newsletter/RSS、YouTube、Podcast RSS 等。先匹配同一内容，再跨平台找文字稿；不同剪辑版本的时间戳不可互相套用。完全匹配才自动合并，不确定时待确认。
-- 视频/Podcast 字幕顺序：OS 官方字幕/文稿 → CC → 平台或其他位置已有且可验证的字幕（PLT/EXT）→ 对用户有权访问内容的临时音频流转录。转录后立即删除临时媒体数据；不持久下载音视频、不按标题/简介猜正文、不绕过付费墙。需要登录的来源只可使用用户明确授权的会话 Cookie，并作为受保护密钥保存。
-- 文章只使用官方正文或官方 RSS 正文；无法取得时标记“暂未获取原文”，不生成分析。
-- 无字幕/正文内容计划在发布后 24 小时、72 小时、7 天及之后每周重新检查。
-- 有原文时：中文 AI 摘要、5–10 个中文关键点、英文原文主引文及所有实质不同的支持/补充/案例/限定/对比/反驳/风险证据、中文拓展分析。补充证据不设固定数量上限；重复证据可合并。
-- 引文必须来自程序按 segment ID 从原文精确回填；保留位置/时间戳、说话人和来源类型。AI 总结/推论与原文明确区分。当前确认版本不做逐句中文翻译；图表全部用英文。
-- 图表按内容选择 Timeline、Tree、Comparison Table，节点可追溯到论点和证据；不做鱼骨图。
-- 搜索为 PostgreSQL 全文搜索 + Qwen3.7 Text Embedding Flash 轻量向量，仅向量化摘要、关键点、证据组和标签；不向量化完整字幕。生成模型只用 DeepSeek Flash，不设备用模型。每天最多完成 5 张知识卡片，不以填满额度为目标。
-- 默认优先低成本、云端处理和少量工具：Next.js PWA、Supabase、GitHub Actions、DeepSeek、Qwen Embedding、RSS/YouTube Data API；网页抽取尽量使用开源方案。
+## 关键文件
 
-## 当前实现状态（以迁入的代码为准）
-
-- 已实现 Today、Library、Detail、Sources、Settings 页面及 PWA 外壳；本地演示模式含 3 条带论点/英文证据/分析/图表的知识卡片。
-- 已登记 12 个来源；The Batch、Acquired、Hidden Brain 的首轮发现流程已做过验证。
-- 已实现发现与跨平台匹配、文章正文抽取、字幕解析/证据校验、DeepSeek 接口、Qwen 768 维嵌入接口、Supabase schema/RLS/全文与混合搜索、阅读状态、GitHub Actions 定时发现。
-- 设置页可查看服务状态；本地 `/setup` 页面可填写 Supabase、DeepSeek、DashScope、YouTube API 配置，并写入本机 `.env.local`。密钥不要发到聊天或提交 Git。
-- 旧任务记录的最近一次验证：类型检查、Lint、测试和生产构建曾通过；当前新目录未安装依赖、未运行验证，也未确认本地预览服务状态。
-- 代码以演示数据和真实服务接入口为主；不能把演示内容误称为真实抓取结果。尚未确认 Supabase 真实连接、迁移执行、GitHub 自动任务或生产部署已完成。
-
-## 继续工作的顺序
-
-1. 在当前目录恢复依赖并启动 PWA，确认首页与 `/setup` 可视运行。
-2. 用户在本机页面填入外部服务密钥（不要经聊天提供）；再安全验证 Supabase、DeepSeek、DashScope 和 YouTube API。
-3. 执行 Supabase migration，跑通一条真实发现→原文/字幕验证→证据分析→保存→展示的流程。
-4. 再接 GitHub Actions 定时运行并完善其余来源；每个来源单独核实发现和文字稿质量。
-
-## 主要文件
-
-- `README.md`：运行、服务配置、数据库迁移与来源阶段说明。
-- `.env.example`：环境变量模板；勿填写真实密钥后提交。
-- `src/lib/sources.ts`、`src/lib/discovery.ts`：来源与发现。
-- `src/lib/transcript.ts`、`src/lib/article.ts`、`src/lib/evidence.ts`、`src/lib/pipeline.ts`：原文、字幕和证据链。
-- `src/lib/deepseek.ts`、`src/lib/qwen.ts`、`src/lib/search.ts`：模型与搜索。
-- `supabase/migrations/202609180001_initial_schema.sql`：数据库/RLS/搜索定义。
-- `.github/workflows/discover.yml`：定时发现工作流。
+- `src/lib/sources.ts`：29 来源、排序、频道 ID 和发布策略。
+- `src/lib/workflow-policy.ts`：最终工作流限制。
+- `src/lib/discovery.ts`：RSS 与固定 YouTube 频道发现。
+- `src/lib/automation.ts`：每日配额、轮询、卡片制作和发布门禁。
+- `.github/workflows/discover.yml`、`scripts/check-automation-env.ts`：GitHub Actions 与 Secrets 预检。
+- `supabase/migrations/202609270006_switch_to_29_sources.sql`：数据库来源切换与禁邮件落地。
+- `cloudbase/`、`docs/cloudbase-domestic-test.md`：国内只读部署路径。

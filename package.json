@@ -16,7 +16,9 @@
     "process:first": "node --env-file-if-exists=.env.local --import tsx scripts/process-first-item.ts",
     "keepalive": "node --env-file-if-exists=.env.local --import tsx scripts/keepalive.ts",
     "rewrite:home-depot-visuals": "node --env-file-if-exists=.env.local --import tsx scripts/rewrite-home-depot-visuals.ts",
-    "translate:evidence": "node --env-file-if-exists=.env.local --import tsx scripts/translate-evidence.ts"
+    "translate:evidence": "node --env-file-if-exists=.env.local --import tsx scripts/translate-evidence.ts",
+    "cleanup:old-the-batch": "node --env-file-if-exists=.env.local --import tsx scripts/backup-and-remove-old-the-batch.ts",
+    "sources:sync": "node --env-file-if-exists=.env.local --import tsx scripts/sync-source-registry.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

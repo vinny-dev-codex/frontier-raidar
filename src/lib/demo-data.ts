@@ -295,31 +295,6 @@ const BASE_DEMO_ITEMS: KnowledgeItem[] = [
     ],
     isDemo: true,
   },
-  {
-    id: "the-batch-awaiting-body",
-    title: "A Newly Discovered Issue of The Batch",
-    sourceId: "the-batch",
-    sourceName: "The Batch",
-    kind: "article",
-    status: "no_article_body",
-    publishedAt: "2026-09-18",
-    canonicalUrl: "https://www.deeplearning.ai/the-batch",
-    unavailableReasonZh:
-      "已经发现标题，但暂未取得官方文章正文，因此不生成摘要、关键点、分析或图表。",
-    tags: ["AI", "Technology"],
-    people: [],
-    companies: ["DeepLearning.AI"],
-    terms: [{ zh: "人工智能", en: "Artificial Intelligence" }],
-    platformVersions: [
-      {
-        platform: "Official Website",
-        url: "https://www.deeplearning.ai/the-batch",
-        publishedAt: "2026-09-18",
-        matchStatus: "exact",
-      },
-    ],
-    isDemo: true,
-  },
 ];
 
 export const DEMO_ITEMS: KnowledgeItem[] = [
