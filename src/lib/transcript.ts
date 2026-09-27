@@ -3,6 +3,7 @@ import type { TranscriptKind, TranscriptSegment, TranscriptSource } from "./type
 const YOUTUBE_PLAYER_URL = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false";
 const YOUTUBE_CLIENT_VERSION = "20.10.38";
 const YOUTUBE_USER_AGENT = `com.google.android.youtube/${YOUTUBE_CLIENT_VERSION} (Linux; U; Android 14)`;
+const YOUTUBE_WEB_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/141.0 Safari/537.36";
 
 const PRIORITY: Record<TranscriptKind, number> = {
   OS: 1,
@@ -129,8 +130,47 @@ function captionPriority(track: CaptionTrack) {
   return 3;
 }
 
-export async function fetchYouTubeCaptionsTemporarily(videoId: string) {
-  if (!/^[\w-]{11}$/.test(videoId)) throw new Error("Transcript fetch failed: invalid YouTube video ID.");
+function parseInlineJsonObject(html: string, marker: string) {
+  const markerIndex = html.indexOf(marker);
+  if (markerIndex < 0) return undefined;
+  const jsonStart = html.indexOf("{", markerIndex + marker.length);
+  if (jsonStart < 0) return undefined;
+  let depth = 0;
+  let quoted = false;
+  let escaped = false;
+  for (let index = jsonStart; index < html.length; index += 1) {
+    const character = html[index];
+    if (quoted) {
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === '"') quoted = false;
+      continue;
+    }
+    if (character === '"') quoted = true;
+    else if (character === "{") depth += 1;
+    else if (character === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        try {
+          return JSON.parse(html.slice(jsonStart, index + 1)) as unknown;
+        } catch {
+          return undefined;
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+type YouTubePlayerPayload = {
+  captions?: { playerCaptionsTracklistRenderer?: { captionTracks?: CaptionTrack[] } };
+};
+
+function captionTracks(payload: unknown) {
+  return (payload as YouTubePlayerPayload | undefined)?.captions?.playerCaptionsTracklistRenderer?.captionTracks ?? [];
+}
+
+async function fetchCaptionTracks(videoId: string) {
   const playerResponse = await fetch(YOUTUBE_PLAYER_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", "User-Agent": YOUTUBE_USER_AGENT },
@@ -140,12 +180,24 @@ export async function fetchYouTubeCaptionsTemporarily(videoId: string) {
       videoId,
     }),
   });
-  if (!playerResponse.ok) throw new Error(`Transcript fetch failed: YouTube player returned ${playerResponse.status}.`);
+  if (playerResponse.ok) {
+    const tracks = captionTracks(await playerResponse.json());
+    if (tracks.length > 0) return tracks;
+  }
 
-  const payload = await playerResponse.json() as {
-    captions?: { playerCaptionsTracklistRenderer?: { captionTracks?: CaptionTrack[] } };
-  };
-  const tracks = payload.captions?.playerCaptionsTracklistRenderer?.captionTracks ?? [];
+  const watchResponse = await fetch(`https://www.youtube.com/watch?v=${videoId}&hl=en`, {
+    headers: { "Accept-Language": "en-US,en;q=0.9", "User-Agent": YOUTUBE_WEB_USER_AGENT },
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!watchResponse.ok) throw new Error(`Transcript fetch failed: YouTube watch page returned ${watchResponse.status}.`);
+  const html = await watchResponse.text();
+  const webPayload = parseInlineJsonObject(html, "ytInitialPlayerResponse");
+  return captionTracks(webPayload);
+}
+
+export async function fetchYouTubeCaptionsTemporarily(videoId: string) {
+  if (!/^[\w-]{11}$/.test(videoId)) throw new Error("Transcript fetch failed: invalid YouTube video ID.");
+  const tracks = await fetchCaptionTracks(videoId);
   const track = tracks.filter((candidate) => candidate.baseUrl).toSorted((a, b) => captionPriority(a) - captionPriority(b))[0];
   if (!track?.baseUrl) return undefined;
 

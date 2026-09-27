@@ -52,4 +52,16 @@ describe("transcript parsing", () => {
     expect(result?.transcriptSource.kind).toBe("CC");
     expect(result?.segments[0]?.text).toBe("Existing caption.");
   });
+
+  it("falls back to caption tracks embedded in the public watch page", async () => {
+    const embedded = JSON.stringify({ captions: { playerCaptionsTracklistRenderer: { captionTracks: [
+      { languageCode: "en", baseUrl: "https://www.youtube.com/api/timedtext?v=video-id001" },
+    ] } } });
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 200 }))
+      .mockResolvedValueOnce(new Response(`<script>var ytInitialPlayerResponse = ${embedded};</script>`, { status: 200 }))
+      .mockResolvedValueOnce(new Response('<timedtext><body><p t="0" d="1000">Watch-page caption.</p></body></timedtext>', { status: 200 })));
+    const result = await fetchYouTubeCaptionsTemporarily("video-id001");
+    expect(result?.segments[0]?.text).toBe("Watch-page caption.");
+  });
 });
