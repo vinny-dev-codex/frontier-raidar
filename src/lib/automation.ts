@@ -427,6 +427,7 @@ export async function runDailyAutomation() {
     .map((result) => failureMessage(result.reason));
   const remaining = quota.dailyLimit - quota.completedToday;
   const processed = [];
+  let modelResponseFailures = 0;
   const fulfilled = discovery.filter((result): result is PromiseFulfilledResult<{ source: SourceDefinition; entries: DiscoveredEntry[] }> => result.status === "fulfilled");
   const largestSourceBatch = Math.max(0, ...fulfilled.map((result) => result.value.entries.length));
 
@@ -447,9 +448,24 @@ export async function runDailyAutomation() {
         }
       } catch (error) {
         failures.push(`${entry.sourceId}: ${failureMessage(error)}`);
-        // Preparation failures are safe to skip. Once a candidate reaches model processing,
-        // processCandidate records its failure and throws; do not spend more model calls today.
-        if (error instanceof Error && !error.message.startsWith("Transcript fetch failed") && !error.message.startsWith("Official article fetch failed")) throw error;
+        if (error instanceof ModelResponseError) {
+          modelResponseFailures += 1;
+          // A malformed provider response is item-specific. Two such failures are enough
+          // evidence to stop spending model calls for this run, but the daily job itself
+          // remains healthy and can try fresh source items on the next schedule.
+          if (modelResponseFailures >= 2) {
+            return {
+              ok: true,
+              status: processed.length > 0 ? "processed_with_model_failures" : "model_response_deferred",
+              items: processed,
+              ...quota,
+              discoveryFailures: failures,
+            };
+          }
+          continue;
+        }
+        if (error instanceof Error && (error.message.startsWith("Transcript fetch failed") || error.message.startsWith("Official article fetch failed"))) continue;
+        throw error;
       }
     }
   }

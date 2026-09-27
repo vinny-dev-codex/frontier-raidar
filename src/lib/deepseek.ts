@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getPrivateEnv } from "./env";
+import { parseModelJson } from "./model-json";
 import type { TranscriptSegment } from "./types";
 
 export type ModelUsage = { promptTokens: number | null; completionTokens: number | null; totalTokens: number | null };
@@ -71,30 +72,52 @@ function usageFrom(payload: { usage?: Record<string, unknown> }): ModelUsage {
   return { promptTokens: number(usage.input_tokens ?? usage.prompt_tokens), completionTokens: number(usage.output_tokens ?? usage.completion_tokens), totalTokens: number(usage.total_tokens) };
 }
 
+function addUsage(total: ModelUsage, next: ModelUsage) {
+  total.promptTokens = (total.promptTokens ?? 0) + (next.promptTokens ?? 0);
+  total.completionTokens = (total.completionTokens ?? 0) + (next.completionTokens ?? 0);
+  total.totalTokens = (total.totalTokens ?? 0) + (next.totalTokens ?? 0);
+}
+
 export async function extractKnowledgeFromTranscript(input: { title: string; sourceName: string; segments: TranscriptSegment[] }): Promise<{ extraction: DeepSeekExtraction; usage: ModelUsage; model: string }> {
   const env = getPrivateEnv();
   if (!env.DEEPSEEK_API_KEY) throw new Error("DEEPSEEK_API_KEY is not configured.");
+  const usage: ModelUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+  let lastFormatError = "DeepSeek returned invalid JSON despite the response schema.";
 
-  const response = await fetch(`${env.DEEPSEEK_BASE_URL}/responses`, {
-    method: "POST", headers: { Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: env.DEEPSEEK_MODEL,
-      input: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: JSON.stringify({ title: input.title, sourceName: input.sourceName, transcript: input.segments }) }],
-      text: { format: { type: "json_schema", name: "knowledge_extraction", schema: outputSchema } },
-      max_output_tokens: 20_000,
-    }),
-  });
-  const payload = (await response.json().catch(() => ({}))) as { error?: { message?: string }; output_text?: string; output?: { content?: { type?: string; text?: string }[] }[]; usage?: Record<string, unknown> };
-  const usage = usageFrom(payload);
-  if (!response.ok) throw new ModelResponseError(`DeepSeek request failed with ${response.status}: ${payload.error?.message ?? "unknown error"}`, usage);
-  const content = payload.output_text ?? payload.output?.flatMap((item) => item.content ?? []).find((part) => part.type === "output_text")?.text;
-  if (!content) throw new ModelResponseError("DeepSeek returned no output text.", usage);
-  let raw: unknown;
-  try { raw = JSON.parse(content); } catch { throw new ModelResponseError("DeepSeek returned invalid JSON despite the response schema.", usage); }
-  const parsed = extractionSchema.safeParse(raw);
-  if (!parsed.success) {
-    const issues = parsed.error.issues.slice(0, 6).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join(" | ");
-    throw new ModelResponseError(`DeepSeek returned a JSON Schema incompatible result: ${issues}`, usage);
+  // Structured-output providers can still occasionally wrap JSON in Markdown or
+  // return a malformed object. Retry once before deferring this source item.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const response = await fetch(`${env.DEEPSEEK_BASE_URL}/responses`, {
+      method: "POST", headers: { Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: env.DEEPSEEK_MODEL,
+        input: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: JSON.stringify({ title: input.title, sourceName: input.sourceName, transcript: input.segments }) }],
+        text: { format: { type: "json_schema", name: "knowledge_extraction", schema: outputSchema } },
+        max_output_tokens: 20_000,
+      }),
+    });
+    const payload = (await response.json().catch(() => ({}))) as { error?: { message?: string }; output_text?: string; output?: { content?: { type?: string; text?: string }[] }[]; usage?: Record<string, unknown> };
+    const requestUsage = usageFrom(payload);
+    addUsage(usage, requestUsage);
+    if (!response.ok) throw new ModelResponseError(`DeepSeek request failed with ${response.status}: ${payload.error?.message ?? "unknown error"}`, usage);
+    const content = payload.output_text ?? payload.output?.flatMap((item) => item.content ?? []).find((part) => part.type === "output_text")?.text;
+    if (!content) throw new ModelResponseError("DeepSeek returned no output text.", usage);
+
+    let raw: unknown;
+    try {
+      raw = parseModelJson(content);
+    } catch {
+      lastFormatError = "DeepSeek returned invalid JSON despite the response schema.";
+      continue;
+    }
+    const parsed = extractionSchema.safeParse(raw);
+    if (!parsed.success) {
+      const issues = parsed.error.issues.slice(0, 6).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join(" | ");
+      lastFormatError = `DeepSeek returned a JSON Schema incompatible result: ${issues}`;
+      continue;
+    }
+    return { extraction: parsed.data, usage, model: env.DEEPSEEK_MODEL };
   }
-  return { extraction: parsed.data, usage, model: env.DEEPSEEK_MODEL };
+
+  throw new ModelResponseError(`${lastFormatError} Retried once; item deferred.`, usage);
 }

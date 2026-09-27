@@ -1,4 +1,5 @@
 import { getPrivateEnv } from "./env";
+import { parseModelJson } from "./model-json";
 
 type ModelUsage = { promptTokens: number | null; completionTokens: number | null; totalTokens: number | null };
 type EvidenceRow = { id: string; quote: string };
@@ -42,7 +43,7 @@ async function translateChunk(evidence: EvidenceRow[], env: ReturnType<typeof ge
   const content = payload.output_text ?? payload.output?.flatMap((item) => item.content ?? []).find((part) => part.type === "output_text")?.text;
   if (!content) throw new Error("DeepSeek returned no translation output.");
   let raw: unknown;
-  try { raw = JSON.parse(content); } catch { throw new Error("DeepSeek returned invalid translation JSON."); }
+  try { raw = parseModelJson(content); } catch { throw new Error("DeepSeek returned invalid translation JSON."); }
   const translations = raw && typeof raw === "object" && Array.isArray((raw as { translations?: unknown }).translations) ? (raw as { translations: unknown[] }).translations : undefined;
   if (!translations) throw new Error("DeepSeek returned an invalid translation shape.");
 
