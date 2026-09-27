@@ -298,7 +298,24 @@ async function processCandidate(
       .select("id,evidence_code,quote");
     if (evidenceError) throw evidenceError;
 
-    const translations = await translateEvidenceBatchToChinese(storedEvidence);
+    let translations: Awaited<ReturnType<typeof translateEvidenceBatchToChinese>>;
+    try {
+      translations = await translateEvidenceBatchToChinese(storedEvidence);
+    } catch (error) {
+      const usage = error instanceof ModelResponseError ? error.usage : undefined;
+      await recordUsage({
+        provider: "deepseek",
+        model: getPrivateEnv().DEEPSEEK_MODEL,
+        operation: "evidence_translation",
+        status: "failed",
+        itemId,
+        promptTokens: usage?.promptTokens,
+        completionTokens: usage?.completionTokens,
+        totalTokens: usage?.totalTokens,
+        errorSummary: failureMessage(error),
+      });
+      throw error;
+    }
     const { error: translationError } = await database.from("evidence_translations").upsert(
       storedEvidence.map((evidence) => ({
         evidence_id: evidence.id,
