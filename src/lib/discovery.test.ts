@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { discoverYouTube, iso8601DurationToSeconds } from "./discovery";
+import { discoverYouTube, iso8601DurationToSeconds, rankDiscoveredEntries } from "./discovery";
 import { SOURCES } from "./sources";
 
 afterEach(() => {
@@ -36,5 +36,22 @@ describe("YouTube discovery", () => {
   it("parses ISO 8601 video durations", () => {
     expect(iso8601DurationToSeconds("PT12M5S")).toBe(725);
     expect(iso8601DurationToSeconds("PT2H")).toBe(7200);
+  });
+});
+
+describe("source entry ranking", () => {
+  it("prefers explicit transcripts, then existing YouTube captions, then plain RSS pages", () => {
+    const base = {
+      sourceId: "test",
+      title: "Example",
+      canonicalUrl: "https://example.com/item",
+    };
+    const ranked = rankDiscoveredEntries([
+      { ...base, externalId: "rss-plain", platform: "Podcast RSS", transcriptUrls: [] },
+      { ...base, externalId: "youtube", platform: "YouTube", transcriptUrls: [] },
+      { ...base, externalId: "rss-transcript", platform: "Podcast RSS", transcriptUrls: ["https://example.com/transcript"] },
+    ]);
+
+    expect(ranked.map((entry) => entry.externalId)).toEqual(["rss-transcript", "youtube", "rss-plain"]);
   });
 });

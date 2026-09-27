@@ -72,8 +72,21 @@ export async function discoverRss(source: SourceDefinition, limit = 20) {
     }];
   });
 }
+
+export function rankDiscoveredEntries(entries: DiscoveredEntry[]) {
+  const rank = (entry: DiscoveredEntry) => {
+    if (entry.transcriptUrls.length > 0) return 0;
+    if (entry.platform === "YouTube") return 1;
+    if (entry.platform === "Official Website") return 2;
+    return 3;
+  };
+  return entries.toSorted((left, right) => rank(left) - rank(right));
+}
+
 export async function discoverSource(source: SourceDefinition, limit = 20) {
   const failures: string[] = [];
+  const discovered: DiscoveredEntry[] = [];
+  const seen = new Set<string>();
   for (const method of source.collectionOrder) {
     try {
       const entries = method === "rss"
@@ -81,11 +94,17 @@ export async function discoverSource(source: SourceDefinition, limit = 20) {
         : method === "youtube"
           ? await discoverYouTube(source, limit)
           : [];
-      if (entries.length > 0) return entries;
+      for (const entry of entries) {
+        const key = `${entry.platform}:${entry.externalId}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        discovered.push(entry);
+      }
     } catch (error) {
       failures.push(`${method}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
+  if (discovered.length > 0) return rankDiscoveredEntries(discovered);
   if (failures.length > 0) throw new Error(`${source.name} discovery failed (${failures.join("; ")}).`);
   return [];
 }
