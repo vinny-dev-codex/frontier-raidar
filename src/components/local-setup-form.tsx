@@ -39,6 +39,10 @@ export function LocalSetupForm() {
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [message, setMessage] = useState("");
 
+  if (process.env.NEXT_PUBLIC_STATIC_EXPORT === "true") {
+    return <aside className="setup-message">国内测试站为只读访问，不提供密钥配置。请在本机开发环境或 CloudBase 控制台配置服务。</aside>;
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setState("saving");

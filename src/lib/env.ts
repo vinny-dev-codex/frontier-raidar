@@ -25,6 +25,7 @@ const privateSchema = z.object({
 const publicSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: optionalUrl,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: optionalString,
+  NEXT_PUBLIC_LIBRARY_API_URL: optionalUrl,
 });
 
 export function getPrivateEnv() {
@@ -35,6 +36,7 @@ export function getPublicEnv() {
   return publicSchema.parse({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_LIBRARY_API_URL: process.env.NEXT_PUBLIC_LIBRARY_API_URL,
   });
 }
 
