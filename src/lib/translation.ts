@@ -79,12 +79,21 @@ export async function translateEvidenceBatchToChinese(evidence: EvidenceRow[]) {
   if (!env.DEEPSEEK_API_KEY) throw new Error("DEEPSEEK_API_KEY is not configured.");
   const translations = new Map<string, string>();
   const usage: ModelUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+  const chunks: EvidenceRow[][] = [];
   // Six evidence excerpts per request avoids excessive reasoning/output pressure while
-  // reducing a 45-excerpt card from 45 calls to eight calls.
+  // reducing a 45-excerpt card from 45 calls to eight calls. Three concurrent
+  // requests keep the daily workflow practical without creating an API burst.
   for (let index = 0; index < evidence.length; index += 6) {
-    const result = await translateChunk(evidence.slice(index, index + 6), env);
-    for (const [id, translation] of result.translations) translations.set(id, translation);
-    addUsage(usage, result.usage);
+    chunks.push(evidence.slice(index, index + 6));
+  }
+  for (let index = 0; index < chunks.length; index += 3) {
+    const results = await Promise.all(
+      chunks.slice(index, index + 3).map((chunk) => translateChunk(chunk, env)),
+    );
+    for (const result of results) {
+      for (const [id, translation] of result.translations) translations.set(id, translation);
+      addUsage(usage, result.usage);
+    }
   }
   return { translations, usage, model: env.DEEPSEEK_MODEL };
 }
