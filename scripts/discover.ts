@@ -2,11 +2,11 @@ import { discoverSource } from "../src/lib/discovery";
 import { SOURCES } from "../src/lib/sources";
 
 const limit = Number(process.env.DISCOVERY_LIMIT ?? 5);
-const phaseOne = SOURCES.filter((source) => source.enabled && source.phase === 1);
+const enabledSources = SOURCES.filter((source) => source.enabled).toSorted((a, b) => a.priority - b.priority);
 
 async function main() {
   const results = await Promise.allSettled(
-    phaseOne.map(async (source) => ({ source, entries: await discoverSource(source, limit) })),
+    enabledSources.map(async (source) => ({ source, entries: await discoverSource(source, limit) })),
   );
 
   let failures = 0;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ItemCard } from "./item-card";
 import { loadLiveItems } from "@/lib/live-data";
+import { SOURCES } from "@/lib/sources";
 import type { KnowledgeItem } from "@/lib/types";
 
 export function LiveToday() {
@@ -25,8 +26,8 @@ export function LiveToday() {
     <section className="stats-grid" aria-label="今日状态">
       <div><strong>{items.length}</strong><span>已发现与处理</span></div>
       <div><strong>{readyItems.length}</strong><span>可阅读</span></div>
-      <div><strong>12</strong><span>启用来源</span></div>
-      <div><strong>4/4</strong><span>外部服务已连接</span></div>
+      <div><strong>{SOURCES.length}</strong><span>启用来源</span></div>
+      <div><strong>1/1</strong><span>公开阅读已连接</span></div>
     </section>
     {items.length === 0 ? <aside className="notice">还没有真实知识卡片。内容必须先通过原文与证据校验才会出现。</aside> : null}
     <section className="section-block" aria-labelledby="ready-heading">

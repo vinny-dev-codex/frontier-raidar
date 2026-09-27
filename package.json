@@ -10,12 +10,13 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "discover": "tsx scripts/discover.ts",
-    "automate": "node --env-file=.env.local --import tsx scripts/automate.ts",
-    "process:first": "node --env-file=.env.local --import tsx scripts/process-first-item.ts",
-    "keepalive": "node --env-file=.env.local --import tsx scripts/keepalive.ts",
-    "rewrite:home-depot-visuals": "node --env-file=.env.local --import tsx scripts/rewrite-home-depot-visuals.ts",
-    "translate:evidence": "node --env-file=.env.local --import tsx scripts/translate-evidence.ts"
+    "discover": "node --env-file-if-exists=.env.local --import tsx scripts/discover.ts",
+    "automation:check": "node --import tsx scripts/check-automation-env.ts",
+    "automate": "node --env-file-if-exists=.env.local --import tsx scripts/automate.ts",
+    "process:first": "node --env-file-if-exists=.env.local --import tsx scripts/process-first-item.ts",
+    "keepalive": "node --env-file-if-exists=.env.local --import tsx scripts/keepalive.ts",
+    "rewrite:home-depot-visuals": "node --env-file-if-exists=.env.local --import tsx scripts/rewrite-home-depot-visuals.ts",
+    "translate:evidence": "node --env-file-if-exists=.env.local --import tsx scripts/translate-evidence.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

@@ -119,14 +119,17 @@ export type SourceDefinition = {
   name: string;
   category: string;
   kinds: ContentKind[];
+  priority: number;
   homepage: string;
   discovery: {
     website?: string;
     rss?: string;
-    youtube?: string;
+    youtubeChannelId: string;
     applePodcasts?: string;
     spotify?: string;
   };
+  collectionOrder: ("rss" | "website" | "youtube")[];
+  publicationPolicy: "standard" | "external_corroboration_required";
   transcriptNotes: string;
   enabled: boolean;
   phase: 1 | 2;

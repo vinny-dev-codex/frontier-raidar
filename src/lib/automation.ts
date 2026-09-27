@@ -9,6 +9,7 @@ import { createServiceSupabaseClient } from "./supabase";
 import { fetchTranscriptTemporarily } from "./transcript";
 import { translateEvidenceBatchToChinese } from "./translation";
 import type { ContentKind, Evidence, SourceDefinition, TranscriptSegment, TranscriptSource } from "./types";
+import { dailyCardLimit } from "./workflow-policy";
 
 type Candidate = {
   entry: DiscoveredEntry;
@@ -69,17 +70,15 @@ async function canProcessToday(database: NonNullable<ReturnType<typeof createSer
 
   const startOfDay = new Date();
   startOfDay.setUTCHours(0, 0, 0, 0);
-  const dailyLimit = Number.parseInt(process.env.DAILY_PROCESS_LIMIT ?? "5", 10);
+  const dailyLimit = dailyCardLimit(process.env.DAILY_PROCESS_LIMIT);
   const { count, error } = await database
-    .from("model_usage_events")
+    .from("processing_attempts")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
-    .eq("provider", "deepseek")
-    .eq("operation", "knowledge_extraction")
     .eq("status", "succeeded")
-    .gte("created_at", startOfDay.toISOString());
+    .gte("updated_at", startOfDay.toISOString());
   if (error) throw error;
-  return { allowed: (count ?? 0) < dailyLimit, processedToday: count ?? 0, dailyLimit };
+  return { allowed: (count ?? 0) < dailyLimit, completedToday: count ?? 0, dailyLimit };
 }
 
 async function prepareCandidate(entry: DiscoveredEntry, source: SourceDefinition): Promise<Candidate | undefined> {
@@ -132,7 +131,7 @@ async function isAlreadyHandled(
     .eq("external_id", entry.externalId)
     .maybeSingle();
   if (error) throw error;
-  if (item?.status === "ready") return true;
+  if (item?.status === "ready" || item?.status === "pending_review") return true;
 
   const { data: attempt, error: attemptError } = await database
     .from("processing_attempts")
@@ -362,9 +361,16 @@ async function processCandidate(
     const { error: searchError } = await database.from("search_documents").insert(searchRows);
     if (searchError) throw searchError;
 
+    const requiresCorroboration = source.publicationPolicy === "external_corroboration_required";
     const { error: publishError } = await database
       .from("knowledge_items")
-      .update({ status: "ready", updated_at: new Date().toISOString() })
+      .update({
+        status: requiresCorroboration ? "pending_review" : "ready",
+        unavailable_reason_zh: requiresCorroboration
+          ? "该来源涉及健康或心理结论；需补充论文、系统综述或权威机构材料并完成交叉验证后才能公开。"
+          : null,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", itemId);
     if (publishError) throw publishError;
 
@@ -374,7 +380,14 @@ async function processCandidate(
       .eq("id", attempt.id);
     if (completeError) throw completeError;
 
-    return { itemId, title: entry.title, segments: segments.length, claims: draft.claims.length, evidence: storedEvidence.length };
+    return {
+      itemId,
+      title: entry.title,
+      status: requiresCorroboration ? "pending_review" : "ready",
+      segments: segments.length,
+      claims: draft.claims.length,
+      evidence: storedEvidence.length,
+    };
   } catch (error) {
     const message = failureMessage(error);
     if (itemId) {
@@ -402,23 +415,36 @@ export async function runDailyAutomation() {
   const quota = await canProcessToday(database, userId);
   if (!quota.allowed) return { ok: true, status: "daily_limit_reached", ...quota };
 
-  const phaseOneSources = SOURCES.filter((source) => source.enabled && source.phase === 1);
+  const enabledSources = SOURCES.filter((source) => source.enabled).toSorted((a, b) => a.priority - b.priority);
   const discovery = await Promise.allSettled(
-    phaseOneSources.map(async (source) => ({ source, entries: await discoverSource(source, Number(process.env.DISCOVERY_LIMIT ?? "10")) })),
+    enabledSources.map(async (source): Promise<{ source: SourceDefinition; entries: DiscoveredEntry[] }> => ({
+      source,
+      entries: await discoverSource(source, Number(process.env.DISCOVERY_LIMIT ?? "10")),
+    })),
   );
   const failures = discovery
     .filter((result): result is PromiseRejectedResult => result.status === "rejected")
     .map((result) => failureMessage(result.reason));
+  const remaining = quota.dailyLimit - quota.completedToday;
+  const processed = [];
+  const fulfilled = discovery.filter((result): result is PromiseFulfilledResult<{ source: SourceDefinition; entries: DiscoveredEntry[] }> => result.status === "fulfilled");
+  const largestSourceBatch = Math.max(0, ...fulfilled.map((result) => result.value.entries.length));
 
-  for (const result of discovery) {
-    if (result.status !== "fulfilled") continue;
-    for (const entry of result.value.entries) {
+  // One entry per source in each round keeps a daily batch diverse instead of
+  // consuming five consecutive entries from the first source in the list.
+  for (let entryIndex = 0; entryIndex < largestSourceBatch; entryIndex += 1) {
+    for (const result of fulfilled) {
+      const entry = result.value.entries[entryIndex];
+      if (!entry) continue;
       if (await isAlreadyHandled(database, userId, entry)) continue;
       try {
         const candidate = await prepareCandidate(entry, result.value.source);
         if (!candidate) continue;
-        const processed = await processCandidate(database, userId, candidate);
-        return { ok: true, status: "processed", ...processed, discoveryFailures: failures };
+        const item = await processCandidate(database, userId, candidate);
+        processed.push(item);
+        if (processed.length >= remaining) {
+          return { ok: true, status: "processed", items: processed, ...quota, discoveryFailures: failures };
+        }
       } catch (error) {
         failures.push(`${entry.sourceId}: ${failureMessage(error)}`);
         // Preparation failures are safe to skip. Once a candidate reaches model processing,
@@ -428,5 +454,11 @@ export async function runDailyAutomation() {
     }
   }
 
-  return { ok: true, status: "no_eligible_verified_source", discoveryFailures: failures };
+  return {
+    ok: true,
+    status: processed.length > 0 ? "processed" : "no_eligible_verified_source",
+    items: processed,
+    ...quota,
+    discoveryFailures: failures,
+  };
 }

@@ -5,6 +5,7 @@ import { createSearchEmbedding } from "../src/lib/qwen";
 import { createServiceSupabaseClient } from "../src/lib/supabase";
 import { fetchTranscriptTemporarily } from "../src/lib/transcript";
 import { translateEvidenceBatchToChinese } from "../src/lib/translation";
+import { dailyCardLimit } from "../src/lib/workflow-policy";
 import type { Evidence, TranscriptSource } from "../src/lib/types";
 
 const ITEM = {
@@ -49,17 +50,15 @@ async function main() {
   if (quotaStatus?.warning) {
     throw new Error(`Supabase database warning threshold reached (${quotaStatus.database_bytes} bytes). Processing is paused before the 500 MB Free-plan cap.`);
   }
-  const dailyLimit = Number.parseInt(process.env.DAILY_PROCESS_LIMIT ?? "5", 10);
+  const dailyLimit = dailyCardLimit(process.env.DAILY_PROCESS_LIMIT);
   const startOfDay = new Date();
   startOfDay.setUTCHours(0, 0, 0, 0);
   const { count: processedToday, error: usageCountError } = await database
-    .from("model_usage_events")
+    .from("processing_attempts")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
-    .eq("provider", "deepseek")
-    .eq("operation", "knowledge_extraction")
     .eq("status", "succeeded")
-    .gte("created_at", startOfDay.toISOString());
+    .gte("updated_at", startOfDay.toISOString());
   if (usageCountError) throw usageCountError;
   if ((processedToday ?? 0) >= dailyLimit) {
     throw new Error(`Daily DeepSeek processing limit reached (${dailyLimit}). Try again tomorrow.`);
