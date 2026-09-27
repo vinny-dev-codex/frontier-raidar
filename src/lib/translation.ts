@@ -38,7 +38,7 @@ async function translateChunk(evidence: EvidenceRow[], env: ReturnType<typeof ge
         model: env.DEEPSEEK_MODEL,
         input: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: JSON.stringify({ evidence }) }],
         text: { format: { type: "json_schema", name: "evidence_translations", schema: translationSchema } },
-        reasoning: { enabled: false },
+        reasoning: { effort: "none" },
         max_output_tokens: 20_000,
       }),
     });

@@ -21,9 +21,10 @@
 - `main` 已包含 29 来源工作流和 CloudBase 国内访问实现。
 - `src/lib/sources.ts` 是来源、优先级、固定频道 ID、采集顺序和发布门禁的唯一代码事实来源。
 - `src/lib/workflow-policy.ts` 锁定每日上限 5、禁音频转录、禁邮件投递。
-- GitHub Actions 已改用 `--env-file-if-exists=.env.local`，避免 CI 因不存在本机文件而启动失败；运行前会检查五个必需变量，并传入 `YOUTUBE_API_KEY`。
+- 本地生产入口是 `scripts/run-local-automation.ps1`；计划任务按悉尼本地时间每日运行，日志写入 `E:\AI\Codex\FrontierRadar\logs` 并保留 30 天。
+- GitHub Actions 已改为云端健康检查：校验 Secrets、类型、测试、Lint 和数据库容量，不再执行托管环境中注定无法取得 YouTube 字幕的生产制卡。
 - 自动发现会遍历全部 29 个启用来源并按优先级轮询；同一轮每个来源最多取一条，避免一天五张全部来自同一频道。
-- 本机网络的最近 10 条审计结果是 29/29 可取得现成字幕，但 GitHub 托管运行器连续两次审计均为 0/29。已验证频道配置和字幕解析正常，阻断点是 GitHub 数据中心网络无法取得 YouTube 字幕轨；因此线上全来源自动化尚未打通，不能把绿色 Actions 运行误报为业务成功。
+- 本机网络的最近 10 条审计结果是 29/29 可取得现成字幕，但 GitHub 托管运行器连续两次审计均为 0/29。已验证频道配置和字幕解析正常，阻断点是 GitHub 数据中心网络无法取得 YouTube 字幕轨；生产链路因此迁移到本地计划任务，不能把 GitHub 的绿色健康检查误报成制卡产出。
 - 无可验证文字材料时不调用模型，也不为了填满 5 张而降低标准。
 - 页面显示 29 个来源及其采集顺序。全部来源通过原文证据校验后直接发布。
 - CloudBase 静态导出通过只读云函数访问 Supabase；浏览器不持有 Supabase 地址或密钥。
@@ -33,7 +34,8 @@
 
 - 新迁移：`supabase/migrations/202609270007_rebalance_sources.sql`。它调整优先级并移除 Huberman Lab 与 Wayde AI 的旧发布门禁。
 - 旧库中曾有两条 The Batch 半成品和一条悬空 Acquired 处理记录。执行删除前必须先备份到 `E:\AI\Codex\FrontierRadar\backups`，然后按已核对的精确 ID 清理，不能模糊删除。
-- GitHub 仓库 Secrets 已能通过预检，最近主工作流也能访问数据库和模型接口；但其 YouTube 字幕网络路径仍需迁移到本地/自托管运行器或合规字幕接口。五张、多来源成品卡片在完成该迁移并实际写库前，不得标记为已交付。
+- 2026-09-27 已公开 6 张成品卡片，覆盖 Acquired、Stanford HAI、Y Combinator、The Knowledge Project 四个来源；当日成功处理数为 5，已达到每日硬上限。
+- DeepSeek Responses API 必须使用 `reasoning: { effort: "none" }` 关闭提取和翻译中的推理消耗；`reasoning.enabled=false` 不生效。提供方偶尔超过 JSON Schema 数组上限时，程序端会确定性裁剪到卡片规格，避免无意义重试。
 
 ## 关键文件
 
