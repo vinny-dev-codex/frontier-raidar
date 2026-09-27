@@ -38,11 +38,11 @@ export default function SettingsPage() {
       <section className="settings-section">
         <h2>处理规则</h2>
         <div className="policy-grid">
-          <article><strong>字幕顺序</strong><p>OS → CC → RSS → PLT → EXT。找不到就停止，不使用语音识别。</p></article>
+          <article><strong>字幕顺序</strong><p>OS → CC → RSS → PLT → EXT → 经授权的临时音频流转录。转录后立即删除媒体数据。</p></article>
           <article><strong>证据保护</strong><p>AI 只选择 segment ID，引文由程序从原文精确复制。</p></article>
           <article><strong>低存储</strong><p>不永久保存音视频或完整文稿，只保存相关证据和分析结果。</p></article>
           <article><strong>轻量搜索</strong><p>全文搜索覆盖保存文本，向量只处理摘要、论点、证据组和标签。</p></article>
-          <article><strong>成本上限</strong><p>每天最多成功处理 1 条 DeepSeek 卡片；失败不会自动重试。</p></article>
+          <article><strong>成本上限</strong><p>每天最多成功处理 5 张知识卡片；未满 5 张时不补足，失败不会自动重试。</p></article>
           <article><strong>额度预警</strong><p>数据库达到 350 MiB 时暂停处理，避免撞到 Free 方案 500 MB 上限。</p></article>
         </div>
       </section>

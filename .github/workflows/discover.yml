@@ -29,5 +29,5 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
-          DAILY_PROCESS_LIMIT: "1"
+          DAILY_PROCESS_LIMIT: "5"
           DISCOVERY_LIMIT: "10"

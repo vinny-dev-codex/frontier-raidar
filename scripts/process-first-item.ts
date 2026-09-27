@@ -49,7 +49,7 @@ async function main() {
   if (quotaStatus?.warning) {
     throw new Error(`Supabase database warning threshold reached (${quotaStatus.database_bytes} bytes). Processing is paused before the 500 MB Free-plan cap.`);
   }
-  const dailyLimit = Number.parseInt(process.env.DAILY_PROCESS_LIMIT ?? "1", 10);
+  const dailyLimit = Number.parseInt(process.env.DAILY_PROCESS_LIMIT ?? "5", 10);
   const startOfDay = new Date();
   startOfDay.setUTCHours(0, 0, 0, 0);
   const { count: processedToday, error: usageCountError } = await database

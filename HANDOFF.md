@@ -24,13 +24,13 @@
 - 首批 12 个来源：The Batch、One Useful Thing、MIT Technology Review、Bloomberg Primer、Stanford GSB View From The Top、HBR IdeaCast、Knowledge at Wharton、Acquired、Lenny’s Podcast、Hidden Brain、Speaking of Psychology、Freakonomics Radio。
 - 首阶段真实发现已接入 The Batch、Acquired、Hidden Brain；其余来源登记后仍需逐个验证入口和文稿可用性。
 - 内容发现可来自官方站点、Newsletter/RSS、YouTube、Podcast RSS 等。先匹配同一内容，再跨平台找文字稿；不同剪辑版本的时间戳不可互相套用。完全匹配才自动合并，不确定时待确认。
-- 视频/Podcast 字幕顺序：OS 官方字幕/文稿 → CC → 平台或其他位置已有且可验证的字幕（PLT/EXT）。都找不到时只展示标题、来源、日期、链接和“暂无找到字幕”，不生成摘要、关键点、分析或图表。禁止语音识别、音视频下载、按标题/简介猜正文或绕过付费墙。
+- 视频/Podcast 字幕顺序：OS 官方字幕/文稿 → CC → 平台或其他位置已有且可验证的字幕（PLT/EXT）→ 对用户有权访问内容的临时音频流转录。转录后立即删除临时媒体数据；不持久下载音视频、不按标题/简介猜正文、不绕过付费墙。需要登录的来源只可使用用户明确授权的会话 Cookie，并作为受保护密钥保存。
 - 文章只使用官方正文或官方 RSS 正文；无法取得时标记“暂未获取原文”，不生成分析。
 - 无字幕/正文内容计划在发布后 24 小时、72 小时、7 天及之后每周重新检查。
 - 有原文时：中文 AI 摘要、5–10 个中文关键点、英文原文主引文及所有实质不同的支持/补充/案例/限定/对比/反驳/风险证据、中文拓展分析。补充证据不设固定数量上限；重复证据可合并。
 - 引文必须来自程序按 segment ID 从原文精确回填；保留位置/时间戳、说话人和来源类型。AI 总结/推论与原文明确区分。当前确认版本不做逐句中文翻译；图表全部用英文。
 - 图表按内容选择 Timeline、Tree、Comparison Table，节点可追溯到论点和证据；不做鱼骨图。
-- 搜索为 PostgreSQL 全文搜索 + Qwen3.7 Text Embedding Flash 轻量向量，仅向量化摘要、关键点、证据组和标签；不向量化完整字幕。生成模型只用 DeepSeek Flash，不设备用模型。
+- 搜索为 PostgreSQL 全文搜索 + Qwen3.7 Text Embedding Flash 轻量向量，仅向量化摘要、关键点、证据组和标签；不向量化完整字幕。生成模型只用 DeepSeek Flash，不设备用模型。每天最多完成 5 张知识卡片，不以填满额度为目标。
 - 默认优先低成本、云端处理和少量工具：Next.js PWA、Supabase、GitHub Actions、DeepSeek、Qwen Embedding、RSS/YouTube Data API；网页抽取尽量使用开源方案。
 
 ## 当前实现状态（以迁入的代码为准）

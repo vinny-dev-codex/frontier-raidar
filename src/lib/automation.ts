@@ -69,7 +69,7 @@ async function canProcessToday(database: NonNullable<ReturnType<typeof createSer
 
   const startOfDay = new Date();
   startOfDay.setUTCHours(0, 0, 0, 0);
-  const dailyLimit = Number.parseInt(process.env.DAILY_PROCESS_LIMIT ?? "1", 10);
+  const dailyLimit = Number.parseInt(process.env.DAILY_PROCESS_LIMIT ?? "5", 10);
   const { count, error } = await database
     .from("model_usage_events")
     .select("id", { count: "exact", head: true })
