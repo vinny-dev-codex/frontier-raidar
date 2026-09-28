@@ -1,5 +1,6 @@
-import { extractKnowledgeFromTranscript } from "./deepseek";
+import { extractKnowledgeFromTranscript, ModelResponseError } from "./deepseek";
 import { materializeEvidence } from "./evidence";
+import { compactTranscriptSegments } from "./transcript-compaction";
 import type { TranscriptKind, TranscriptSegment } from "./types";
 
 export async function buildKnowledgeDraft(input: {
@@ -9,15 +10,22 @@ export async function buildKnowledgeDraft(input: {
   segments: TranscriptSegment[];
 }) {
   if (input.segments.length === 0) throw new Error("A verified transcript is required.");
-  const result = await extractKnowledgeFromTranscript(input);
+  const evidenceSegments = compactTranscriptSegments(input.segments);
+  const result = await extractKnowledgeFromTranscript({ ...input, segments: evidenceSegments });
   const extraction = result.extraction;
-  const claims = extraction.claims.map((claim) => ({
-    id: claim.id,
-    titleZh: claim.titleZh,
-    informationType: claim.informationType,
-    assessmentZh: claim.assessmentZh,
-    evidence: materializeEvidence(claim.evidence, input.segments, input.sourceKind),
-  }));
+  let claims;
+  try {
+    claims = extraction.claims.map((claim) => ({
+      id: claim.id,
+      titleZh: claim.titleZh,
+      informationType: claim.informationType,
+      assessmentZh: claim.assessmentZh,
+      evidence: materializeEvidence(claim.evidence, evidenceSegments, input.sourceKind),
+    }));
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "unknown evidence validation error";
+    throw new ModelResponseError(`Evidence validation failed after automatic reference repair: ${reason}`, result.usage);
+  }
   return { ...extraction, claims, modelUsage: result.usage, model: result.model };
 }
 

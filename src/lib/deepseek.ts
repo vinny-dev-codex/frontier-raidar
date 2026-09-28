@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getPrivateEnv } from "./env";
+import { reconcileEvidenceReferences } from "./evidence-references";
 import { parseModelJson } from "./model-json";
 import type { TranscriptSegment, TreeNode } from "./types";
 
@@ -20,7 +21,7 @@ const treeNodeSchema: z.ZodType<TreeNode> = z.lazy(() => z.object({
 const extractionSchema = z.object({
   summaryZh: z.string(), terms: z.array(z.object({ zh: z.string(), en: z.string() })), people: z.array(z.string()), companies: z.array(z.string()),
   tags: z.array(z.string()).min(3),
-  claims: z.array(z.object({ id: z.string(), titleZh: z.string(), informationType: z.enum(["fact", "opinion", "prediction", "advice"]), assessmentZh: z.string(), evidence: z.array(z.object({ id: z.string(), relation: relationSchema, segmentIds: z.array(z.string()).min(1) })).min(1) })).min(5),
+  claims: z.array(z.object({ id: z.string(), titleZh: z.string(), informationType: z.enum(["fact", "opinion", "prediction", "advice"]), assessmentZh: z.string(), evidence: z.array(z.object({ id: z.string(), relation: relationSchema, segmentIds: z.array(z.string()).min(1), anchorText: z.string().min(1) })).min(1) })).min(5),
   analysis: z.object({
     whyZh: z.array(z.string()), horizontalZh: z.array(z.string()), crossDisciplinaryZh: z.array(z.string()), applicationZh: z.array(z.string()), personalZh: z.array(z.string()),
     memoryZh: z.object({ keywords: z.array(z.string()).min(3), analogy: z.string(), recallQuestion: z.string() }),
@@ -45,7 +46,7 @@ const outputSchema = {
     tags: { type: "array", minItems: 3, maxItems: 10, items: { type: "string" } },
     claims: { type: "array", minItems: 5, maxItems: 10, items: { type: "object", additionalProperties: false, required: ["id", "titleZh", "informationType", "assessmentZh", "evidence"], properties: {
       id: { type: "string" }, titleZh: { type: "string" }, informationType: { type: "string", enum: ["fact", "opinion", "prediction", "advice"] }, assessmentZh: { type: "string" },
-      evidence: { type: "array", minItems: 1, maxItems: 6, items: { type: "object", additionalProperties: false, required: ["id", "relation", "segmentIds"], properties: { id: { type: "string" }, relation: { type: "string", enum: ["PRIMARY", "SUP", "ADD", "EX", "CTX", "QUAL", "CMP", "REF", "RISK", "UNC"] }, segmentIds: { type: "array", minItems: 1, maxItems: 3, items: { type: "string" } } } } },
+      evidence: { type: "array", minItems: 1, maxItems: 6, items: { type: "object", additionalProperties: false, required: ["id", "relation", "segmentIds", "anchorText"], properties: { id: { type: "string" }, relation: { type: "string", enum: ["PRIMARY", "SUP", "ADD", "EX", "CTX", "QUAL", "CMP", "REF", "RISK", "UNC"] }, segmentIds: { type: "array", minItems: 1, maxItems: 3, items: { type: "string" } }, anchorText: { type: "string" } } } },
     } } },
     analysis: { type: "object", additionalProperties: false, required: ["whyZh", "horizontalZh", "crossDisciplinaryZh", "applicationZh", "personalZh", "memoryZh"], properties: {
       whyZh: { type: "array", maxItems: 4, items: { type: "string" } }, horizontalZh: { type: "array", maxItems: 4, items: { type: "string" } }, crossDisciplinaryZh: { type: "array", maxItems: 4, items: { type: "string" } }, applicationZh: { type: "array", maxItems: 4, items: { type: "string" } }, personalZh: { type: "array", maxItems: 4, items: { type: "string" } },
@@ -64,7 +65,7 @@ const SYSTEM_PROMPT = `You extract evidence-grounded knowledge from an existing 
 Hard rules:
 1. Follow the supplied JSON Schema exactly.
 2. Produce 5-10 distinct claims in Chinese, with 3-10 tags and 3-5 memory keywords.
-3. Never rewrite or quote transcript text. Return transcript segment IDs only.
+3. Never rewrite transcript text. For each evidence group, return exact transcript segment IDs and an anchorText copied verbatim from 6-18 consecutive words in those segments. The anchor is validation-only and is never shown to readers.
 4. For each claim, include the 1-6 most material supporting, contextual, example, qualification, comparison, rebuttal, risk, or uncertainty evidence groups. Each group may reference at most 3 adjacent or tightly related segments. Do not include repetitive segments.
 5. Summary, analysis, timeline, tree, and comparison labels are Chinese. Keep person and company names in English; terms use Chinese and English pairs.
 6. Separate source claims from your analysis. Do not invent timestamps, speakers, facts, or evidence IDs.
@@ -131,7 +132,12 @@ export async function extractKnowledgeFromTranscript(input: { title: string; sou
         signal: AbortSignal.timeout(120_000),
         body: JSON.stringify({
           model: env.DEEPSEEK_MODEL,
-          input: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: JSON.stringify({ title: input.title, sourceName: input.sourceName, transcript: input.segments }) }],
+          input: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: JSON.stringify({
+            title: input.title,
+            sourceName: input.sourceName,
+            transcript: input.segments,
+            ...(attempt > 0 ? { correctionRequired: lastFormatError } : {}),
+          }) }],
           text: { format: { type: "json_schema", name: "knowledge_extraction", schema: outputSchema } },
           reasoning: { effort: "none" },
           max_output_tokens: 8_000,
@@ -161,7 +167,14 @@ export async function extractKnowledgeFromTranscript(input: { title: string; sou
       lastFormatError = `DeepSeek returned a JSON Schema incompatible result: ${issues}`;
       continue;
     }
-    return { extraction: normalizeExtraction(parsed.data), usage, model: env.DEEPSEEK_MODEL };
+    const normalized = normalizeExtraction(parsed.data);
+    const reconciled = reconcileEvidenceReferences(normalized.claims, input.segments);
+    if (reconciled.unresolved.length > 0) {
+      const invalid = reconciled.unresolved.slice(0, 8).map((entry) => `${entry.claimId}/${entry.evidenceId}: ${entry.segmentIds.join(",")}`).join(" | ");
+      lastFormatError = `DeepSeek referenced transcript segment IDs that do not exist and could not be recovered from exact anchors: ${invalid}`;
+      continue;
+    }
+    return { extraction: { ...normalized, claims: reconciled.claims }, usage, model: env.DEEPSEEK_MODEL };
   }
 
   throw new ModelResponseError(`${lastFormatError} Retried once; item deferred.`, usage);

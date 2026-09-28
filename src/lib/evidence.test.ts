@@ -24,4 +24,15 @@ describe("evidence materialization", () => {
       "OS",
     )).toThrow(/missing transcript segment/);
   });
+
+  it("sorts evidence chronologically and marks omitted transcript segments", () => {
+    const extended = [...transcript, { id: "s3", text: "An omitted sentence.", startMs: 5000, endMs: 7000, speaker: "G1" }, { id: "s4", text: "A later exact sentence.", startMs: 7000, endMs: 9000, speaker: "G1" }];
+    const [evidence] = materializeEvidence(
+      [{ id: "P02", relation: "SUP", segmentIds: ["s4", "s1"] }],
+      extended,
+      "CC",
+    );
+    expect(evidence.quote).toBe("The original exact sentence. […] A later exact sentence.");
+    expect(evidence.locator).toBe("00:01–00:09");
+  });
 });

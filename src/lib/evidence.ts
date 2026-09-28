@@ -34,21 +34,27 @@ export function materializeEvidence(
   transcript: TranscriptSegment[],
   sourceKind: TranscriptKind,
 ) {
-  const byId = new Map(transcript.map((segment) => [segment.id, segment]));
+  const byId = new Map(transcript.map((segment, index) => [segment.id, { segment, index }]));
 
   return selections.map((selection) => {
-    const segments = selection.segmentIds.map((id) => byId.get(id));
-    if (segments.some((segment) => !segment)) {
+    const selected = selection.segmentIds.map((id) => byId.get(id));
+    if (selected.some((entry) => !entry)) {
       throw new Error(`Evidence ${selection.id} references a missing transcript segment.`);
     }
-    const exactSegments = segments as TranscriptSegment[];
+    const exactEntries = (selected as { segment: TranscriptSegment; index: number }[]).toSorted((left, right) => left.index - right.index);
+    const exactSegments = exactEntries.map((entry) => entry.segment);
+    const quote = exactEntries.reduce((text, entry, index) => {
+      if (index === 0) return entry.segment.text.trim();
+      const separator = entry.index === exactEntries[index - 1].index + 1 ? " " : " […] ";
+      return `${text}${separator}${entry.segment.text.trim()}`;
+    }, "");
     return {
       id: selection.id,
       relation: selection.relation,
       locator: locatorFor(exactSegments),
       speaker: exactSegments[0]?.speaker ?? "U",
       sourceKind,
-      quote: exactSegments.map((segment) => segment.text.trim()).join(" "),
+      quote,
     } satisfies Evidence;
   });
 }
