@@ -83,6 +83,9 @@ dd { margin: 0; overflow-wrap: anywhere; }
 
 .detail-page { max-width: 840px; margin-inline: auto; }
 .detail-header { border-bottom: 1px solid var(--line); padding-bottom: 28px; }
+.detail-language-row { align-items: center; display: flex; gap: 16px; justify-content: space-between; }
+.language-button { background: var(--paper); border: 1px solid var(--line); border-radius: 999px; color: var(--ink); cursor: pointer; flex: 0 0 auto; font: inherit; font-size: .84rem; font-weight: 750; padding: 7px 12px; }
+.language-button:hover { border-color: var(--accent); color: var(--accent); }
 .source-resource-link { background: var(--accent); border-radius: 7px; color: white; display: inline-block; font-size: .9rem; font-weight: 750; margin-top: 16px; padding: 9px 13px; text-decoration: none; }
 .source-resource-link:hover { background: #0d3e34; color: white; }
 .detail-page > section { border-bottom: 1px solid var(--line); padding-block: 34px; }

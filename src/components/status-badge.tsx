@@ -8,6 +8,14 @@ const labels: Record<ContentStatus, string> = {
   processing_failed: "处理失败",
 };
 
-export function StatusBadge({ status }: { status: ContentStatus }) {
-  return <span className={`status status-${status}`}>{labels[status]}</span>;
+const englishLabels: Record<ContentStatus, string> = {
+  ready: "Ready",
+  no_transcript: "No transcript found",
+  no_article_body: "Article unavailable",
+  pending_review: "Pending",
+  processing_failed: "Processing failed",
+};
+
+export function StatusBadge({ status, locale = "zh" }: { status: ContentStatus; locale?: "zh" | "en" }) {
+  return <span className={`status status-${status}`}>{locale === "en" ? englishLabels[status] : labels[status]}</span>;
 }

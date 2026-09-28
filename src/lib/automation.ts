@@ -3,6 +3,7 @@ import { ModelResponseError } from "./deepseek";
 import { discoverSource, type DiscoveredEntry } from "./discovery";
 import { getPrivateEnv } from "./env";
 import { buildKnowledgeDraft, createSearchDocuments } from "./pipeline";
+import { createEnglishLocalization } from "./localization";
 import { createSearchEmbeddings } from "./qwen";
 import { SOURCES } from "./sources";
 import { createServiceSupabaseClient } from "./supabase";
@@ -251,6 +252,7 @@ async function processCandidate(
 
     const cleanup = await Promise.all([
       database.from("search_documents").delete().eq("item_id", itemId),
+      database.from("knowledge_item_localizations").delete().eq("item_id", itemId),
       database.from("visuals").delete().eq("item_id", itemId),
       database.from("analyses").delete().eq("item_id", itemId),
       database.from("claims").delete().eq("item_id", itemId),
@@ -404,6 +406,58 @@ async function processCandidate(
       .eq("id", itemId);
     if (publishError) throw publishError;
 
+    let englishLocalization: "ready" | "deferred" = "ready";
+    try {
+      const localized = await createEnglishLocalization({
+        summaryZh: draft.summaryZh,
+        tags: draft.tags,
+        claims: draft.claims,
+        analysis: draft.analysis,
+        visuals: draft.visuals,
+      });
+      const { error: localizationError } = await database.from("knowledge_item_localizations").upsert({
+        item_id: itemId,
+        locale: "en",
+        content: localized.localization,
+        model: localized.model,
+        source_updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "item_id,locale" });
+      if (localizationError) throw localizationError;
+      try {
+        await recordUsage({
+          provider: "deepseek",
+          model: localized.model,
+          operation: "english_localization",
+          status: "succeeded",
+          itemId,
+          promptTokens: localized.usage.promptTokens,
+          completionTokens: localized.usage.completionTokens,
+          totalTokens: localized.usage.totalTokens,
+        });
+      } catch {
+        // Usage logging must never retract an otherwise valid English cache.
+      }
+    } catch (error) {
+      englishLocalization = "deferred";
+      const usage = error instanceof ModelResponseError ? error.usage : undefined;
+      try {
+        await recordUsage({
+          provider: "deepseek",
+          model: getPrivateEnv().DEEPSEEK_MODEL,
+          operation: "english_localization",
+          status: "failed",
+          itemId,
+          promptTokens: usage?.promptTokens,
+          completionTokens: usage?.completionTokens,
+          totalTokens: usage?.totalTokens,
+          errorSummary: failureMessage(error),
+        });
+      } catch {
+        // English is optional; even its diagnostic logging cannot block Chinese publication.
+      }
+    }
+
     const { error: completeError } = await database
       .from("processing_attempts")
       .update({ item_id: itemId, status: "succeeded", manual_retry_required: false, error_summary: null, updated_at: new Date().toISOString() })
@@ -417,6 +471,7 @@ async function processCandidate(
       segments: segments.length,
       claims: draft.claims.length,
       evidence: storedEvidence.length,
+      englishLocalization,
     };
   } catch (error) {
     const message = failureMessage(error);

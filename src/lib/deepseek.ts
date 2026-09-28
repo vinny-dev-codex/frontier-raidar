@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { getPrivateEnv } from "./env";
 import { parseModelJson } from "./model-json";
-import type { TranscriptSegment } from "./types";
+import type { TranscriptSegment, TreeNode } from "./types";
 
 export type ModelUsage = { promptTokens: number | null; completionTokens: number | null; totalTokens: number | null };
 
@@ -13,6 +13,10 @@ export class ModelResponseError extends Error {
 }
 
 const relationSchema = z.enum(["PRIMARY", "SUP", "ADD", "EX", "CTX", "QUAL", "CMP", "REF", "RISK", "UNC"]);
+const treeNodeSchema: z.ZodType<TreeNode> = z.lazy(() => z.object({
+  label: z.string(),
+  children: z.array(treeNodeSchema).optional(),
+}));
 const extractionSchema = z.object({
   summaryZh: z.string(), terms: z.array(z.object({ zh: z.string(), en: z.string() })), people: z.array(z.string()), companies: z.array(z.string()),
   tags: z.array(z.string()).min(3),
@@ -23,7 +27,7 @@ const extractionSchema = z.object({
   }),
   visuals: z.object({
     timeline: z.array(z.object({ locator: z.string(), label: z.string(), claimId: z.string().optional() })),
-    tree: z.object({ label: z.string(), children: z.array(z.unknown()).optional() }),
+    tree: treeNodeSchema,
     comparison: z.array(z.object({ question: z.string(), viewA: z.string(), viewB: z.string(), evidenceIds: z.array(z.string()) })),
   }),
 });

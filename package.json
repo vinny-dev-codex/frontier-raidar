@@ -17,6 +17,7 @@
     "keepalive": "node --env-file-if-exists=.env.local --import tsx scripts/keepalive.ts",
     "rewrite:home-depot-visuals": "node --env-file-if-exists=.env.local --import tsx scripts/rewrite-home-depot-visuals.ts",
     "translate:evidence": "node --env-file-if-exists=.env.local --import tsx scripts/translate-evidence.ts",
+    "localize:english": "node --env-file-if-exists=.env.local --import tsx scripts/backfill-english-localizations.ts",
     "cleanup:old-the-batch": "node --env-file-if-exists=.env.local --import tsx scripts/backup-and-remove-old-the-batch.ts",
     "sources:sync": "node --env-file-if-exists=.env.local --import tsx scripts/sync-source-registry.ts",
     "sources:audit": "node --env-file-if-exists=.env.local --import tsx scripts/audit-sources.ts",

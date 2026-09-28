@@ -13,7 +13,7 @@ function loadAll() {
   }
 }
 
-export function ReadingActions({ itemId }: { itemId: string }) {
+export function ReadingActions({ itemId, locale = "zh" }: { itemId: string; locale?: "zh" | "en" }) {
   const snapshot = useSyncExternalStore(
     (callback) => {
       window.addEventListener("frontier-reading-state", callback);
@@ -36,14 +36,14 @@ export function ReadingActions({ itemId }: { itemId: string }) {
   }
 
   return (
-    <div className="reading-actions" aria-label="阅读操作">
+    <div className="reading-actions" aria-label={locale === "en" ? "Reading actions" : "阅读操作"}>
       <button aria-pressed={state.saved} onClick={() => update({ ...state, saved: !state.saved })} type="button">
-        {state.saved ? "已收藏" : "收藏"}
+        {locale === "en" ? (state.saved ? "Saved" : "Save") : (state.saved ? "已收藏" : "收藏")}
       </button>
       <button aria-pressed={state.read} onClick={() => update({ ...state, read: !state.read })} type="button">
-        {state.read ? "已读" : "标记已读"}
+        {locale === "en" ? (state.read ? "Read" : "Mark as read") : (state.read ? "已读" : "标记已读")}
       </button>
-      <small>状态仅保存在当前设备</small>
+      <small>{locale === "en" ? "Stored on this device only" : "状态仅保存在当前设备"}</small>
     </div>
   );
 }

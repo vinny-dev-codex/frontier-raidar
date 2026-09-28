@@ -87,6 +87,29 @@ export type Analysis = {
   };
 };
 
+export type EnglishLocalization = {
+  summary: string;
+  tags: string[];
+  claims: { id: string; title: string; assessment: string }[];
+  analysis: {
+    why: string[];
+    horizontal: string[];
+    crossDisciplinary: string[];
+    application: string[];
+    personal: string[];
+    memory: {
+      keywords: string[];
+      analogy: string;
+      recallQuestion: string;
+    };
+  };
+  visuals: {
+    timeline: TimelineEvent[];
+    tree: TreeNode;
+    comparison: ComparisonRow[];
+  };
+};
+
 export type KnowledgeItem = {
   id: string;
   title: string;
@@ -111,6 +134,7 @@ export type KnowledgeItem = {
     tree?: TreeNode;
     comparison?: ComparisonRow[];
   };
+  english?: EnglishLocalization;
   isDemo?: boolean;
 };
 

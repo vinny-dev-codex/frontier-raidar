@@ -1,8 +1,8 @@
 import type { ComparisonRow, TimelineEvent, TreeNode } from "@/lib/types";
 
-export function Timeline({ events }: { events: TimelineEvent[] }) {
+export function Timeline({ events, locale = "zh" }: { events: TimelineEvent[]; locale?: "zh" | "en" }) {
   return (
-    <ol className="timeline" aria-label="时间线">
+    <ol className="timeline" aria-label={locale === "en" ? "Timeline" : "时间线"}>
       {events.map((event) => (
         <li key={`${event.locator}-${event.label}`}>
           <span>{event.locator}</span>
@@ -29,9 +29,9 @@ function TreeBranch({ node }: { node: TreeNode }) {
   );
 }
 
-export function KnowledgeTree({ root }: { root: TreeNode }) {
+export function KnowledgeTree({ root, locale = "zh" }: { root: TreeNode; locale?: "zh" | "en" }) {
   return (
-    <div className="knowledge-tree" aria-label="知识树">
+    <div className="knowledge-tree" aria-label={locale === "en" ? "Knowledge tree" : "知识树"}>
       <ul>
         <TreeBranch node={root} />
       </ul>
@@ -39,16 +39,16 @@ export function KnowledgeTree({ root }: { root: TreeNode }) {
   );
 }
 
-export function ComparisonTable({ rows }: { rows: ComparisonRow[] }) {
+export function ComparisonTable({ rows, locale = "zh" }: { rows: ComparisonRow[]; locale?: "zh" | "en" }) {
   return (
     <div className="table-scroll">
       <table>
         <thead>
           <tr>
-            <th>问题</th>
-            <th>观点 A</th>
-            <th>观点 B</th>
-            <th>证据</th>
+            <th>{locale === "en" ? "Question" : "问题"}</th>
+            <th>{locale === "en" ? "View A" : "观点 A"}</th>
+            <th>{locale === "en" ? "View B" : "观点 B"}</th>
+            <th>{locale === "en" ? "Evidence" : "证据"}</th>
           </tr>
         </thead>
         <tbody>
