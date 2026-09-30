@@ -71,9 +71,9 @@ npm run dev
 
 `supabase/migrations/202609240002_processing_controls.sql`
 
-第二个迁移会记录每次 DeepSeek 与百炼调用的模型、时间、令牌数和结果，不保存密钥或完整文稿；它也提供 350 MiB 数据库预警阈值。默认每天最多成功处理 5 条知识卡片，不以填满额度为目标。失败会标记为需人工重试，只有显式设置 `FORCE_RETRY=true` 才能重试。
+第二个迁移会记录每次 DeepSeek 与百炼调用的模型、时间、令牌数和结果，不保存密钥或完整文稿；它也提供 350 MiB 数据库预警阈值。默认每天最多成功处理 2 条知识卡片，不以填满额度为目标。失败会标记为需人工重试，只有显式设置 `FORCE_RETRY=true` 才能重试。
 
-Windows 本地计划任务每天 14:00（悉尼本地时间）运行生产流程：同步来源配置，按优先级发现全部 29 个来源，验证官方正文、已有文稿或公开视频现成字幕，每个悉尼自然日最多制作 5 张知识卡片（可少不可多），保存中文证据翻译和搜索向量，然后直接公开成品。轮询时同一轮每个来源最多取一条，优先形成多来源批次。无可验证文本不会调用模型或生成卡片；失败条目会停下并等待人工重试。运行入口是 `scripts/run-local-automation.ps1`；在管理员 PowerShell 中运行 `scripts/install-local-scheduled-task.ps1` 可安装或彻底重建计划任务。当前任务以隐藏的非交互 PowerShell 运行，但 Windows 用户需要保持登录；锁屏或睡眠恢复后可以补跑。管理员安装脚本可进一步切换为无需登录的 S4U 身份。生产失败后每 10 分钟重试、最多 3 次。日志保留 30 天并写入 `E:\AI\Codex\FrontierRadar\logs`，最近一次状态写入 `E:\AI\Codex\FrontierRadar\status\latest.json`。
+Windows 本地计划任务每天 14:00（悉尼本地时间）运行生产流程：同步来源配置，按优先级发现全部 29 个来源，验证官方正文、已有文稿或公开视频现成字幕，每个悉尼自然日最多制作 2 张知识卡片（可少不可多），保存中文证据翻译和搜索向量，然后直接公开成品。轮询时同一轮每个来源最多取一条，优先形成多来源批次。无可验证文本不会调用模型或生成卡片；失败条目会停下并等待人工重试。运行入口是 `scripts/run-local-automation.ps1`；在管理员 PowerShell 中运行 `scripts/install-local-scheduled-task.ps1` 可安装或彻底重建计划任务。当前任务以隐藏的非交互 PowerShell 运行，但 Windows 用户需要保持登录；锁屏或睡眠恢复后可以补跑。管理员安装脚本可进一步切换为无需登录的 S4U 身份。生产失败后每 10 分钟重试、最多 3 次。日志保留 30 天并写入 `E:\AI\Codex\FrontierRadar\logs`，最近一次状态写入 `E:\AI\Codex\FrontierRadar\status\latest.json`。
 
 本地生产自动化从未提交的 `.env.local` 读取凭据。GitHub 仓库 Secrets 继续用于云端预检与容量审计；GitHub Actions 负责类型检查、测试、Lint 和额度健康检查，不再从托管数据中心执行注定拿不到 YouTube 字幕的生产制卡。`OWNER_EMAIL` 只用于多用户数据库中定位内容所有者，不用于通知。
 

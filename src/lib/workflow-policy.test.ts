@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { dailyCardLimit, startOfSydneyDay, WORKFLOW_POLICY } from "./workflow-policy";
 
 describe("final workflow policy", () => {
-  it("never permits more than five cards per day", () => {
-    expect(dailyCardLimit()).toBe(5);
+  it("never permits more than two cards per day", () => {
+    expect(dailyCardLimit()).toBe(2);
+    expect(dailyCardLimit("1")).toBe(1);
     expect(dailyCardLimit("2")).toBe(2);
-    expect(dailyCardLimit("99")).toBe(5);
+    expect(dailyCardLimit("99")).toBe(2);
   });
 
   it("forbids audio transcription and email delivery", () => {

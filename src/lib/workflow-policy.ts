@@ -1,5 +1,5 @@
 export const WORKFLOW_POLICY = {
-  maximumDailyCards: 5,
+  maximumDailyCards: 2,
   allowAudioTranscription: false,
   allowEmailDelivery: false,
   acceptedPrimaryText: [

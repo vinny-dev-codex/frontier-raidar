@@ -34,7 +34,7 @@ $settings = New-ScheduledTaskSettingsSet `
   -RestartInterval (New-TimeSpan -Minutes 10)
 
 $expectedStartTime = $At.ToString("hh\:mm\:ss")
-$description = "Frontier Radar production automation: daily at $expectedStartTime local time; up to five cards; no audio transcription; no email delivery."
+$description = "Frontier Radar production automation: daily at $expectedStartTime local time; up to two cards; no audio transcription; no email delivery."
 $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description $description
 $registeredTask = Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force -ErrorAction Stop
 $taskInfo = $registeredTask | Get-ScheduledTaskInfo -ErrorAction Stop
