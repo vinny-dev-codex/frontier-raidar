@@ -13,7 +13,7 @@ function loadAll() {
   }
 }
 
-export function ReadingActions({ itemId, locale = "zh" }: { itemId: string; locale?: "zh" | "en" }) {
+export function ReadingActions({ itemId, locale = "zh", compact = false }: { itemId: string; locale?: "zh" | "en"; compact?: boolean }) {
   const snapshot = useSyncExternalStore(
     (callback) => {
       window.addEventListener("frontier-reading-state", callback);
@@ -33,6 +33,24 @@ export function ReadingActions({ itemId, locale = "zh" }: { itemId: string; loca
     all[itemId] = next;
     localStorage.setItem(KEY, JSON.stringify(all));
     window.dispatchEvent(new CustomEvent("frontier-reading-state"));
+  }
+
+  if (compact) {
+    const label = locale === "en" ? (state.saved ? "Remove from saved" : "Save for later") : (state.saved ? "取消收藏" : "收藏，稍后阅读");
+    return (
+      <button
+        aria-label={label}
+        aria-pressed={state.saved}
+        className="card-save-button"
+        onClick={() => update({ ...state, saved: !state.saved })}
+        title={label}
+        type="button"
+      >
+        <svg aria-hidden="true" fill={state.saved ? "currentColor" : "none"} height="22" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="22">
+          <path d="m12 3 2.78 5.63 6.22.91-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91L12 3Z" />
+        </svg>
+      </button>
+    );
   }
 
   return (

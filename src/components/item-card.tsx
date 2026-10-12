@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { StatusBadge } from "./status-badge";
+import { ReadingActions } from "./reading-actions";
 import type { KnowledgeItem } from "@/lib/types";
 
 export function ItemCard({ item }: { item: KnowledgeItem }) {
@@ -11,7 +12,10 @@ export function ItemCard({ item }: { item: KnowledgeItem }) {
     <article className="item-card">
       <div className="item-card-topline">
         <span>{item.sourceName}{item.isDemo ? " · 演示" : ""}</span>
-        <time dateTime={item.publishedAt}>{item.publishedAt}</time>
+        <div className="item-card-date-actions">
+          <time dateTime={item.publishedAt}>{item.publishedAt}</time>
+          <ReadingActions compact itemId={item.id} />
+        </div>
       </div>
       <h2>
         <Link href={itemHref}>{item.title}</Link>
