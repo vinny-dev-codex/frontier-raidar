@@ -12,14 +12,14 @@ export function ItemCard({ item }: { item: KnowledgeItem }) {
     <article className="item-card">
       <div className="item-card-topline">
         <span>{item.sourceName}{item.isDemo ? " · 演示" : ""}</span>
-        <div className="item-card-date-actions">
-          <time dateTime={item.publishedAt}>{item.publishedAt}</time>
-          <ReadingActions compact itemId={item.id} />
-        </div>
+        <time dateTime={item.publishedAt}>{item.publishedAt}</time>
       </div>
-      <h2>
-        <Link href={itemHref}>{item.title}</Link>
-      </h2>
+      <div className="item-card-title-row">
+        <h2>
+          <Link href={itemHref}>{item.title}</Link>
+        </h2>
+        <ReadingActions compact itemId={item.id} />
+      </div>
       <StatusBadge status={item.status} />
       {item.status === "ready" ? (
         <p>{item.summaryZh}</p>
