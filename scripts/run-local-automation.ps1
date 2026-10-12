@@ -85,7 +85,7 @@ try {
           & $npm run supabase:check
           if ($LASTEXITCODE -ne 0) { throw "Supabase connectivity check failed with exit code $LASTEXITCODE." }
         } else {
-          Write-Phase "Synchronizing the 29-source registry."
+          Write-Phase "Synchronizing the source registry."
           & $npm run sources:sync
           if ($LASTEXITCODE -ne 0) { throw "Source synchronization failed with exit code $LASTEXITCODE." }
 

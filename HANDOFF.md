@@ -6,10 +6,10 @@
 
 ## 已确认且不可再沿用旧说法的决定
 
-- 正式来源已经从旧的 12 个切换为 29 个；用户提供的 DOCX 只作为频道索引，实际采集应选择可靠、高效的官网、RSS、官方文字稿或可验证字幕。
-- 29 个来源均已绑定唯一官方 YouTube 频道 ID，避免按名称搜索导致串台。
-- 来源按 1–29 严格排序。前十名是 Hidden Brain、Huberman Lab、Lenny's Podcast、Freakonomics Radio Network、Dwarkesh Patel、Stanford HAI、Google DeepMind、Stanford GSB、Y Combinator、Acquired。
-- Huberman Lab 位列第 2，Acquired 下调到第 10；Huberman Lab 与 Wayde AI 均按标准流程直接发布，不设置额外数据门禁。
+- 正式来源已经从旧的 12 个扩展为 30 个；用户提供的 DOCX 只作为频道索引，实际采集应选择可靠、高效的官网、RSS、官方文字稿或可验证字幕。
+- 30 个来源均已绑定唯一官方 YouTube 频道 ID，避免按名称搜索导致串台。
+- 来源按 1–30 严格排序。前十名是 Hidden Brain、Huberman Lab、Lenny's Podcast、Alex Hormozi、Dwarkesh Patel、Stanford GSB、Y Combinator、No Priors、Harvard Business Review、Dan Koe。Brain Inspired、Lex Fridman、erin meryl mcgurk 分列第 11–13；Freakonomics Radio Network、Radiolab、Stanford HAI、Google DeepMind、Acquired 为最后五位（26–30）。
+- Huberman Lab 位列第 2，Acquired 下调到第 30；Huberman Lab 与 Wayde AI 均按标准流程直接发布，不设置额外数据门禁。
 - 每个悉尼自然日最多制作 2 张卡片，可少不可多。代码把环境变量限制在最多 2，不能由部署配置调高。
 - 文字材料只接受官方正文、官方文字稿、发布者 RSS 文稿或可验证字幕。最终决定明确禁止音频转录。
 - 中文证据翻译继续保留；DeepSeek 负责提取和翻译，Qwen Embedding 继续负责 768 维精选文本向量。
@@ -18,15 +18,15 @@
 
 ## 当前实现状态
 
-- `main` 已包含 29 来源工作流和 CloudBase 国内访问实现。
+- `main` 已包含 30 来源工作流和 CloudBase 国内访问实现。
 - `src/lib/sources.ts` 是来源、优先级、固定频道 ID、采集顺序和发布门禁的唯一代码事实来源。
 - `src/lib/workflow-policy.ts` 锁定每日上限 5、禁音频转录、禁邮件投递。
 - 本地生产入口是 `scripts/run-local-automation.ps1`；计划任务按悉尼本地时间每日运行，日志写入 `E:\AI\Codex\FrontierRadar\logs` 并保留 30 天。
 - GitHub Actions 已改为云端健康检查：校验 Secrets、类型、测试、Lint 和数据库容量，不再执行托管环境中注定无法取得 YouTube 字幕的生产制卡。
-- 自动发现会遍历全部 29 个启用来源并按优先级轮询；同一轮每个来源最多取一条，避免一天五张全部来自同一频道。
+- 自动发现会遍历全部 30 个启用来源并按优先级轮询；同一轮每个来源最多取一条，优先形成多来源批次。
 - 本机网络的最近 10 条审计结果是 29/29 可取得现成字幕，但 GitHub 托管运行器连续两次审计均为 0/29。已验证频道配置和字幕解析正常，阻断点是 GitHub 数据中心网络无法取得 YouTube 字幕轨；生产链路因此迁移到本地计划任务，不能把 GitHub 的绿色健康检查误报成制卡产出。
 - 无可验证文字材料时不调用模型，也不为了填满 2 张而降低标准。
-- 页面显示 29 个来源及其采集顺序。全部来源通过原文证据校验后直接发布。
+- 页面显示 30 个来源及其采集顺序。全部来源通过原文证据校验后直接发布。
 - CloudBase 静态导出通过只读云函数访问 Supabase；浏览器不持有 Supabase 地址或密钥。
 - 最近一次本地验证：类型检查通过，31 项测试通过，Lint 通过，Next.js 生产构建通过。
 
@@ -39,7 +39,7 @@
 
 ## 关键文件
 
-- `src/lib/sources.ts`：29 来源、排序、频道 ID 和发布策略。
+- `src/lib/sources.ts`：30 来源、排序、频道 ID 和发布策略。
 - `src/lib/workflow-policy.ts`：最终工作流限制。
 - `src/lib/discovery.ts`：RSS 与固定 YouTube 频道发现。
 - `src/lib/automation.ts`：每日配额、轮询、卡片制作和发布门禁。

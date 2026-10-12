@@ -10,7 +10,7 @@ export default function SourcesPage() {
       <section className="page-heading">
         <p className="eyebrow">SOURCES</p>
         <h1>来源管理</h1>
-        <p>29 个频道是内容索引；采集时优先使用可靠、高效的官网、RSS 或现成文字材料。没有可验证文本就不制作卡片。</p>
+        <p>{SOURCES.length} 个频道是内容索引；采集时优先使用可靠、高效的官网、RSS 或现成文字材料。没有可验证文本就不制作卡片。</p>
       </section>
       <section className="stats-grid source-stats" aria-label="来源状态">
         <div><strong>{SOURCES.length}</strong><span>正式来源</span></div>

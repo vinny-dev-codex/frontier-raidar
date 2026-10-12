@@ -1,6 +1,6 @@
 # Frontier Radar
 
-面向个人学习的低成本前沿信息库。它从 29 个正式来源发现文章、访谈和播客，并且只在取得可验证原文、字幕或文稿后生成中文摘要、关键论点、英文原文与中文译文证据、拓展分析和中文图表结构。
+面向个人学习的低成本前沿信息库。它从 30 个正式来源发现文章、访谈和播客，并且只在取得可验证原文、字幕或文稿后生成中文摘要、关键论点、英文原文与中文译文证据、拓展分析和中文图表结构。
 
 ## 当前状态
 
@@ -9,8 +9,8 @@
 - 已完成 Today、Library、Detail、Sources、Settings 五个页面和 PWA 外壳。
 - 未配置密钥时使用明确标记的本地演示模式，能够搜索、筛选、收藏、标记已读、导出阅读状态。
 - 每条知识卡片提供关键论点、英文证据、中文分析、中文可视化结构和原始资源的一键链接。
-- 29 个来源均已绑定唯一官方 YouTube 频道 ID；来源文档仅作为频道索引，实际采集优先官网、RSS 和已有文字材料。
-- Huberman Lab 位列第 2 优先级；Huberman Lab 与 Wayde AI 均按标准流程直接发布，不设置额外数据门禁。Acquired 已下调到第 10。
+- 30 个来源均已绑定唯一官方 YouTube 频道 ID；来源文档仅作为频道索引，实际采集优先官网、RSS 和已有文字材料。
+- Huberman Lab 位列第 2 优先级；Huberman Lab 与 Wayde AI 均按标准流程直接发布，不设置额外数据门禁。Alex Hormozi 位列第 4；Acquired 已下调到第 30。
 - CloudBase 国内读取路径已由用户及其家人在中国大陆验证可访问，并已正式合并到主分支。
 - 已实现跨平台匹配评分、证据片段校验、DeepSeek 提取接口和 Qwen 768 维嵌入接口。
 - 已提供 Supabase 数据库、来源种子数据、阅读状态、行级权限和全文/向量混合搜索迁移。
@@ -44,7 +44,7 @@ npm run dev
 - `/`：今日优先阅读与处理队列。
 - `/library`：关键词、状态、来源、主题、收藏和排序组合筛选。
 - `/item/<id>`：摘要、5–10 个关键论点、精确原文证据、分析和图表。
-- `/sources`：29 个来源、采集顺序、优先级和发布门禁。
+- `/sources`：30 个来源、采集顺序、优先级和发布门禁。
 - `/settings`：服务连接、处理规则和本地阅读数据。
 - `/api/health`、`/api/items`、`/api/sources`：运行状态和只读数据接口。
 
@@ -73,7 +73,7 @@ npm run dev
 
 第二个迁移会记录每次 DeepSeek 与百炼调用的模型、时间、令牌数和结果，不保存密钥或完整文稿；它也提供 350 MiB 数据库预警阈值。默认每天最多成功处理 2 条知识卡片，不以填满额度为目标。失败会标记为需人工重试，只有显式设置 `FORCE_RETRY=true` 才能重试。
 
-Windows 本地计划任务每天 14:00（悉尼本地时间）运行生产流程：同步来源配置，按优先级发现全部 29 个来源，验证官方正文、已有文稿或公开视频现成字幕，每个悉尼自然日最多制作 2 张知识卡片（可少不可多），保存中文证据翻译和搜索向量，然后直接公开成品。轮询时同一轮每个来源最多取一条，优先形成多来源批次。无可验证文本不会调用模型或生成卡片；失败条目会停下并等待人工重试。运行入口是 `scripts/run-local-automation.ps1`；在管理员 PowerShell 中运行 `scripts/install-local-scheduled-task.ps1` 可安装或彻底重建计划任务。当前任务以隐藏的非交互 PowerShell 运行，但 Windows 用户需要保持登录；锁屏或睡眠恢复后可以补跑。管理员安装脚本可进一步切换为无需登录的 S4U 身份。生产失败后每 10 分钟重试、最多 3 次。日志保留 30 天并写入 `E:\AI\Codex\FrontierRadar\logs`，最近一次状态写入 `E:\AI\Codex\FrontierRadar\status\latest.json`。
+Windows 本地计划任务每天 14:00（悉尼本地时间）运行生产流程：同步来源配置，按优先级发现全部 30 个来源，验证官方正文、已有文稿或公开视频现成字幕，每个悉尼自然日最多制作 2 张知识卡片（可少不可多），保存中文证据翻译和搜索向量，然后直接公开成品。轮询时同一轮每个来源最多取一条，优先形成多来源批次。无可验证文本不会调用模型或生成卡片；失败条目会停下并等待人工重试。运行入口是 `scripts/run-local-automation.ps1`；在管理员 PowerShell 中运行 `scripts/install-local-scheduled-task.ps1` 可安装或彻底重建计划任务。当前任务以隐藏的非交互 PowerShell 运行，但 Windows 用户需要保持登录；锁屏或睡眠恢复后可以补跑。管理员安装脚本可进一步切换为无需登录的 S4U 身份。生产失败后每 10 分钟重试、最多 3 次。日志保留 30 天并写入 `E:\AI\Codex\FrontierRadar\logs`，最近一次状态写入 `E:\AI\Codex\FrontierRadar\status\latest.json`。
 
 本地生产自动化从未提交的 `.env.local` 读取凭据。GitHub 仓库 Secrets 继续用于云端预检与容量审计；GitHub Actions 负责类型检查、测试、Lint 和额度健康检查，不再从托管数据中心执行注定拿不到 YouTube 字幕的生产制卡。`OWNER_EMAIL` 只用于多用户数据库中定位内容所有者，不用于通知。
 
@@ -121,6 +121,6 @@ npm run discover
 
 ## 来源优先级
 
-前十名依次为：Hidden Brain、Huberman Lab、Lenny's Podcast、Freakonomics Radio Network、Dwarkesh Patel、Stanford HAI、Google DeepMind、Stanford GSB、Y Combinator、Acquired。其余 19 个来源继续按 `src/lib/sources.ts` 中的明确序号轮询。
+前十名依次为：Hidden Brain、Huberman Lab、Lenny's Podcast、Alex Hormozi、Dwarkesh Patel、Stanford GSB、Y Combinator、No Priors、Harvard Business Review、Dan Koe。Brain Inspired、Lex Fridman、erin meryl mcgurk 分列第 11–13；Freakonomics Radio Network、Radiolab、Stanford HAI、Google DeepMind、Acquired 分列第 26–30。其余来源继续按 `src/lib/sources.ts` 中的明确序号轮询。
 
-29 个频道全部启用。来源审计会检查每个频道最近 10 条内容的时长和现成字幕。截至 2026-09-27，本机网络审计为 29/29 均至少有一条符合自动制作条件；GitHub 托管运行器的两次审计均为 0/29，因为其数据中心网络拿不到 YouTube 公开字幕轨。因此生产制卡改由本地计划任务执行，GitHub Actions 只做云端健康检查。任何路径都不得用音频转录补缺。
+30 个频道全部启用。来源审计会检查每个频道最近 10 条内容的时长和现成字幕。截至 2026-09-27，本机网络审计为 29/29 均至少有一条符合自动制作条件；GitHub 托管运行器的两次审计均为 0/29，因为其数据中心网络拿不到 YouTube 公开字幕轨。因此生产制卡改由本地计划任务执行，GitHub Actions 只做云端健康检查。任何路径都不得用音频转录补缺。
