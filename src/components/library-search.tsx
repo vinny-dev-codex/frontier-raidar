@@ -3,8 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import type { KnowledgeItem } from "@/lib/types";
 import { ItemCard } from "./item-card";
+import { useReadingLanguage } from "./reading-language";
 
 export function LibrarySearch({ items }: { items: KnowledgeItem[] }) {
+  const locale = useReadingLanguage();
+  const en = locale === "en";
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [source, setSource] = useState("all");
@@ -59,61 +62,61 @@ export function LibrarySearch({ items }: { items: KnowledgeItem[] }) {
   }, [favorites, favoritesOnly, items, query, sort, source, status, topic]);
 
   return (
-    <>
+    <div lang={en ? "en" : "zh-CN"}>
       <div className="search-panel library-controls">
         <label>
-          搜索标题、人物、公司、术语或主题
+          {en ? "Search titles, people, companies, terms or topics" : "搜索标题、人物、公司、术语或主题"}
           <input
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="例如：Distribution Advantage"
+            placeholder={en ? "e.g. Distribution Advantage" : "例如：Distribution Advantage"}
             type="search"
             value={query}
           />
         </label>
         <label>
-          状态
+          {en ? "Status" : "状态"}
           <select onChange={(event) => setStatus(event.target.value)} value={status}>
-            <option value="all">全部</option>
+            <option value="all">{en ? "All" : "全部"}</option>
             <option value="ready">Ready</option>
-            <option value="no_transcript">暂无字幕</option>
-            <option value="no_article_body">暂未获取原文</option>
-            <option value="pending_review">等待处理</option>
+            <option value="no_transcript">{en ? "No transcript" : "暂无字幕"}</option>
+            <option value="no_article_body">{en ? "No article text" : "暂未获取原文"}</option>
+            <option value="pending_review">{en ? "Pending" : "等待处理"}</option>
           </select>
         </label>
         <label>
-          来源
+          {en ? "Source" : "来源"}
           <select onChange={(event) => setSource(event.target.value)} value={source}>
-            <option value="all">全部来源</option>
+            <option value="all">{en ? "All sources" : "全部来源"}</option>
             {sources.map((name) => <option key={name} value={name}>{name}</option>)}
           </select>
         </label>
         <label>
-          主题
+          {en ? "Topic" : "主题"}
           <select onChange={(event) => setTopic(event.target.value)} value={topic}>
-            <option value="all">全部主题</option>
+            <option value="all">{en ? "All topics" : "全部主题"}</option>
             {topics.map((name) => <option key={name} value={name}>{name}</option>)}
           </select>
         </label>
         <label>
-          排序
+          {en ? "Sort" : "排序"}
           <select onChange={(event) => setSort(event.target.value)} value={sort}>
-            <option value="newest">最新发布</option>
-            <option value="source">来源名称</option>
-            <option value="status">处理状态</option>
+            <option value="newest">{en ? "Newest" : "最新发布"}</option>
+            <option value="source">{en ? "Source name" : "来源名称"}</option>
+            <option value="status">{en ? "Processing status" : "处理状态"}</option>
           </select>
         </label>
         <label className="checkbox-label">
           <input checked={favoritesOnly} onChange={(event) => setFavoritesOnly(event.target.checked)} type="checkbox" />
-          只看收藏
+          {en ? "Saved only" : "只看收藏"}
         </label>
       </div>
-      <div className="result-row"><p className="result-count">找到 {results.length} 条</p><button className="text-button" onClick={() => { setQuery(""); setStatus("all"); setSource("all"); setTopic("all"); setFavoritesOnly(false); }} type="button">清除筛选</button></div>
+      <div className="result-row"><p className="result-count">{en ? `Results: ${results.length}` : `找到 ${results.length} 条`}</p><button className="text-button" onClick={() => { setQuery(""); setStatus("all"); setSource("all"); setTopic("all"); setFavoritesOnly(false); }} type="button">{en ? "Clear filters" : "清除筛选"}</button></div>
       <div className="item-list">
         {results.map((item) => (
-          <ItemCard item={item} key={item.id} />
+          <ItemCard item={item} key={item.id} locale={locale} />
         ))}
-        {results.length === 0 ? <div className="empty-state"><h2>没有匹配内容</h2><p>尝试清除筛选或使用更宽泛的关键词。</p></div> : null}
+        {results.length === 0 ? <div className="empty-state"><h2>{en ? "No matching cards" : "没有匹配内容"}</h2><p>{en ? "Clear the filters or try a broader search." : "尝试清除筛选或使用更宽泛的关键词。"}</p></div> : null}
       </div>
-    </>
+    </div>
   );
 }

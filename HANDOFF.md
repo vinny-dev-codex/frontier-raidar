@@ -2,7 +2,7 @@
 
 ## 当前目标
 
-维护一个供个人学习使用的低成本前沿信息 PWA：从正式来源发现内容，只在取得可验证文字材料后制作可追溯的中文知识卡片，并通过 Vercel 或 CloudBase 供家人只读访问。
+维护一个供个人学习使用的低成本前沿信息 PWA：从正式来源发现内容，只在取得可验证文字材料后制作可追溯的知识卡片，并通过 Vercel 提供公开只读访问。
 
 ## 已确认且不可再沿用旧说法的决定
 
@@ -14,11 +14,11 @@
 - 文字材料只接受官方正文、官方文字稿、发布者 RSS 文稿或可验证字幕。最终决定明确禁止音频转录。
 - 中文证据翻译继续保留；DeepSeek 负责提取和翻译，Qwen Embedding 继续负责 768 维精选文本向量。
 - 最终决定是不发送邮件通知。`OWNER_EMAIL` 只用于多用户 Supabase 中定位内容所有者；新迁移会删除旧的邮件投递表。
-- CloudBase 路径已由用户及其家人在中国大陆验证可访问，分支已经正式合并到 `main`。Vercel 路径继续保留，两者共用 Supabase 公开成品库。
+- 网站只维护 Vercel + Supabase 部署路径。
 
 ## 当前实现状态
 
-- `main` 已包含 30 来源工作流和 CloudBase 国内访问实现。
+- `main` 已包含 30 来源工作流。
 - `src/lib/sources.ts` 是来源、优先级、固定频道 ID、采集顺序和发布门禁的唯一代码事实来源。
 - `src/lib/workflow-policy.ts` 锁定每日上限 5、禁音频转录、禁邮件投递。
 - 本地生产入口是 `scripts/run-local-automation.ps1`；计划任务按悉尼本地时间每日运行，日志写入 `E:\AI\Codex\FrontierRadar\logs` 并保留 30 天。
@@ -27,7 +27,6 @@
 - 本机网络的最近 10 条审计结果是 29/29 可取得现成字幕，但 GitHub 托管运行器连续两次审计均为 0/29。已验证频道配置和字幕解析正常，阻断点是 GitHub 数据中心网络无法取得 YouTube 字幕轨；生产链路因此迁移到本地计划任务，不能把 GitHub 的绿色健康检查误报成制卡产出。
 - 无可验证文字材料时不调用模型，也不为了填满 2 张而降低标准。
 - 页面显示 30 个来源及其采集顺序。全部来源通过原文证据校验后直接发布。
-- CloudBase 静态导出通过只读云函数访问 Supabase；浏览器不持有 Supabase 地址或密钥。
 - 最近一次本地验证：类型检查通过，31 项测试通过，Lint 通过，Next.js 生产构建通过。
 
 ## 数据库与运行态待核对
@@ -45,4 +44,3 @@
 - `src/lib/automation.ts`：每日配额、轮询、卡片制作和发布门禁。
 - `.github/workflows/discover.yml`、`scripts/check-automation-env.ts`：GitHub Actions 与 Secrets 预检。
 - `supabase/migrations/202609270006_switch_to_29_sources.sql`：数据库来源切换与禁邮件落地。
-- `cloudbase/`、`docs/cloudbase-domestic-test.md`：国内只读部署路径。

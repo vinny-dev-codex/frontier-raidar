@@ -11,7 +11,7 @@
 - 每条知识卡片提供关键论点、英文证据、中文分析、中文可视化结构和原始资源的一键链接。
 - 30 个来源均已绑定唯一官方 YouTube 频道 ID；来源文档仅作为频道索引，实际采集优先官网、RSS 和已有文字材料。
 - Huberman Lab 位列第 2 优先级；Huberman Lab 与 Wayde AI 均按标准流程直接发布，不设置额外数据门禁。Alex Hormozi 位列第 4；Acquired 已下调到第 30。
-- CloudBase 国内读取路径已由用户及其家人在中国大陆验证可访问，并已正式合并到主分支。
+- 首页「一键翻译英文」使用已缓存的英文内容，语言选择在首页、知识库和详情页之间保留；缺失英文缓存的卡片会标注并回退到中文。
 - 已实现跨平台匹配评分、证据片段校验、DeepSeek 提取接口和 Qwen 768 维嵌入接口。
 - 已提供 Supabase 数据库、来源种子数据、阅读状态、行级权限和全文/向量混合搜索迁移。
 - 页面中的示例内容均明确标记为 Prototype Demonstration，并非真实抓取结果。
@@ -103,9 +103,11 @@ Windows 本地计划任务每天 14:00（悉尼本地时间）运行生产流程
 2. 在 Vercel 环境变量中填写 `NEXT_PUBLIC_SUPABASE_URL` 与 `NEXT_PUBLIC_SUPABASE_ANON_KEY`。
 3. 执行公开读取迁移后，直接把 Vercel 网址分享给家人。
 
-### 中国大陆访问（CloudBase）
+### 累计访客
 
-仓库提供一条与 Vercel 隔离的 CloudBase 路径：静态网页通过 CloudBase 云函数读取现有 Supabase 公开知识库，浏览器不会直连 Supabase。该路径已经过中国大陆实机访问确认。完整部署、密钥边界、验收和回退说明见 [CloudBase 国内访问说明](docs/cloudbase-domestic-test.md)。
+在 Supabase SQL Editor 执行 `supabase/migrations/202611060009_unique_visitors.sql`，并在 Vercel Production 设置服务端变量 `SUPABASE_SERVICE_ROLE_KEY` 和 `VISITOR_HASH_SECRET`。后者使用至少 32 字节的随机值并保持稳定；更换会使同一 IP 生成新的摘要。重新部署后开始计数。
+
+首页显示上线以来按公网 IP 去重的累计访客。同一 IP 重复访问只记一次，共用公网出口的多人合计一次。数据库只保存带密钥的摘要；只有服务端可以登记和读取记录，访客接口仅返回累计数字。无法读取时显示「—」。
 
 ## 验证命令
 

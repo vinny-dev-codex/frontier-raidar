@@ -1,13 +1,6 @@
 import type { NextConfig } from "next";
 
-const staticExport = process.env.NEXT_PUBLIC_STATIC_EXPORT === "true";
-
 const nextConfig: NextConfig = {
-  ...(staticExport ? {
-    output: "export",
-    trailingSlash: true,
-    pageExtensions: ["tsx", "jsx"],
-  } : {
     async headers() {
       return [
         {
@@ -28,7 +21,6 @@ const nextConfig: NextConfig = {
         },
       ];
     },
-  }),
 };
 
 export default nextConfig;

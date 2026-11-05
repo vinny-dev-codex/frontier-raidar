@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
+import { hasCompleteEnglish, setReadingLanguage, useReadingLanguage, type Locale } from "./reading-language";
 import { EvidenceBlock } from "./evidence-block";
 import { ReadingActions } from "./reading-actions";
 import { StatusBadge } from "./status-badge";
 import { ComparisonTable, KnowledgeTree, Timeline } from "./visuals";
 import { loadLiveItems } from "@/lib/live-data";
 import type { KnowledgeItem } from "@/lib/types";
-
-type Locale = "zh" | "en";
-const LANGUAGE_KEY = "frontier-radar-card-language-v1";
 
 const copy = {
   zh: {
@@ -30,29 +28,10 @@ const copy = {
   },
 } as const;
 
-function hasCompleteEnglish(item: KnowledgeItem) {
-  return Boolean(item.english
-    && item.english.summary.trim()
-    && item.english.claims.length === (item.claims?.length ?? 0));
-}
-
-function subscribeToLanguage(callback: () => void) {
-  window.addEventListener("frontier-language-change", callback);
-  window.addEventListener("storage", callback);
-  return () => {
-    window.removeEventListener("frontier-language-change", callback);
-    window.removeEventListener("storage", callback);
-  };
-}
-
-function storedLanguage(): Locale {
-  return localStorage.getItem(LANGUAGE_KEY) === "en" ? "en" : "zh";
-}
-
 export function LiveItemDetail({ id }: { id: string }) {
   const [item, setItem] = useState<KnowledgeItem | null | undefined>(undefined);
   const [showTranslations, setShowTranslations] = useState(false);
-  const preferredLocale = useSyncExternalStore<Locale>(subscribeToLanguage, storedLanguage, () => "zh");
+  const preferredLocale = useReadingLanguage();
 
   useEffect(() => {
     loadLiveItems().then((items) => setItem(items.find((candidate) => candidate.id === id) ?? null)).catch(() => setItem(null));
@@ -83,21 +62,21 @@ export function LiveItemDetail({ id }: { id: string }) {
   function toggleLanguage() {
     const next: Locale = activeLocale === "zh" ? "en" : "zh";
     setShowTranslations(false);
-    localStorage.setItem(LANGUAGE_KEY, next);
-    window.dispatchEvent(new CustomEvent("frontier-language-change"));
+    setReadingLanguage(next);
   }
 
   return <article className="detail-page" lang={activeLocale === "en" ? "en" : "zh-CN"}>
     <header className="detail-header">
       <div className="detail-language-row">
         <p className="eyebrow">{item.sourceName} · {item.kind.toUpperCase()}</p>
-        {englishAvailable ? <button className="language-button" type="button" onClick={toggleLanguage} aria-label={activeLocale === "zh" ? "Switch this card to English" : "将此卡片切换为中文"}>🌐 {text.switchLanguage}</button> : null}
+        {englishAvailable ? <button className="language-button" type="button" onClick={toggleLanguage} aria-label={activeLocale === "zh" ? "Switch reading language to English" : "切换阅读语言为中文"}>🌐 {text.switchLanguage}</button> : null}
       </div>
       <h1>{item.title}</h1>
       <div className="detail-meta"><StatusBadge status={item.status} locale={activeLocale} /><time dateTime={item.publishedAt}>{item.publishedAt}</time></div>
       <a className="source-resource-link" href={item.canonicalUrl} target="_blank" rel="noreferrer">↗ {text.source}{activeLocale === "en" ? ` (${item.sourceName})` : `（${item.sourceName}）`}</a>
       <ReadingActions itemId={item.id} locale={activeLocale} />
     </header>
+    {preferredLocale === "en" && !englishAvailable ? <p className="section-note" lang="en">English is not available for this card yet. Showing Chinese.</p> : null}
     {item.status !== "ready" ? <section className="empty-state"><h2>{text.waiting}</h2><p>{item.unavailableReasonZh}</p></section> : <>
       <section><h2>{text.summary}</h2><p>{activeLocale === "en" ? item.english?.summary : item.summaryZh}</p></section>
       <section><h2>{text.claims}</h2><p className="section-note">{text.evidenceNote}</p>{activeLocale === "zh" ? <button className="translation-button" type="button" onClick={() => setShowTranslations((shown) => !shown)} aria-pressed={showTranslations}>{showTranslations ? text.hideTranslations : text.showTranslations}</button> : null}<div className="claim-list">{item.claims?.map((claim, index) => {

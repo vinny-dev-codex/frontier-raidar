@@ -26,7 +26,6 @@ h3 { font-size: 1.05rem; }
 .site-header, .site-footer, .page-container { width: min(1040px, calc(100% - 32px)); margin-inline: auto; }
 .site-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--line); }
 .brand { color: var(--ink); font-weight: 800; font-size: 1.15rem; text-decoration: none; }
-.brand-subtitle { color: var(--muted); font-size: .78rem; line-height: 1.2; margin: 2px 0 0; }
 .main-nav { display: flex; gap: 18px; }
 .main-nav a { color: var(--ink); font-weight: 650; text-decoration: none; }
 .main-nav a:hover { color: var(--accent); }
@@ -35,6 +34,8 @@ h3 { font-size: 1.05rem; }
 .site-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; padding: 24px 0 40px; }
 
 .page-heading { max-width: 760px; margin-bottom: 32px; }
+.today-heading { max-width: none; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; }
+.today-heading h1 { margin-bottom: 0; }
 .page-heading > p:last-child { color: var(--muted); font-size: 1.05rem; }
 .eyebrow { color: var(--accent); font-size: .75rem; font-weight: 800; letter-spacing: .16em; margin-bottom: 8px; }
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }

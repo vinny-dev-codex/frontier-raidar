@@ -1,4 +1,3 @@
-import { getPublicEnv } from "./env";
 import { createPublicSupabaseClient } from "./supabase";
 import type { Claim, EnglishLocalization, Evidence, KnowledgeItem, PlatformVersion, TranscriptSource } from "./types";
 
@@ -159,13 +158,6 @@ function mapItem(row: ItemRow): KnowledgeItem {
 }
 
 export async function loadLiveItems() {
-  const { NEXT_PUBLIC_LIBRARY_API_URL } = getPublicEnv();
-  if (NEXT_PUBLIC_LIBRARY_API_URL) {
-    const response = await fetch(NEXT_PUBLIC_LIBRARY_API_URL);
-    if (!response.ok) throw new Error("The library API request failed.");
-    return list<ItemRow>(await response.json() as ItemRow[]).map(mapItem);
-  }
-
   const client = createPublicSupabaseClient();
   if (!client) throw new Error("Supabase is not configured.");
   const { data, error } = await client.from("knowledge_items").select(SELECT).order("published_at", { ascending: false });

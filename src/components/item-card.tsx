@@ -2,39 +2,40 @@ import Link from "next/link";
 import { StatusBadge } from "./status-badge";
 import { ReadingActions } from "./reading-actions";
 import type { KnowledgeItem } from "@/lib/types";
+import type { Locale } from "./reading-language";
 
-export function ItemCard({ item }: { item: KnowledgeItem }) {
-  const itemHref = process.env.NEXT_PUBLIC_STATIC_EXPORT === "true"
-    ? `/item?id=${encodeURIComponent(item.id)}`
-    : `/item/${item.id}`;
+export function ItemCard({ item, locale = "zh" }: { item: KnowledgeItem; locale?: Locale }) {
+  const english = locale === "en";
+  const translation = english && item.english?.summary.trim() ? item.english : undefined;
+  const itemHref = `/item/${encodeURIComponent(item.id)}`;
 
   return (
-    <article className="item-card">
+    <article className="item-card" lang={english ? "en" : "zh-CN"}>
       <div className="item-card-topline">
-        <span>{item.sourceName}{item.isDemo ? " · 演示" : ""}</span>
+        <span>{item.sourceName}{item.isDemo ? (english ? " · Demo" : " · 演示") : ""}</span>
         <time dateTime={item.publishedAt}>{item.publishedAt}</time>
       </div>
       <div className="item-card-title-row">
         <h2>
           <Link href={itemHref}>{item.title}</Link>
         </h2>
-        <ReadingActions compact itemId={item.id} />
+        <ReadingActions compact itemId={item.id} locale={locale} />
       </div>
-      <StatusBadge status={item.status} />
+      <StatusBadge status={item.status} locale={locale} />
       {item.status === "ready" ? (
-        <p>{item.summaryZh}</p>
+        <>{english && !translation ? <p className="section-note">English not available yet · Showing Chinese</p> : null}<p lang={translation ? "en" : "zh-CN"}>{translation?.summary ?? item.summaryZh}</p></>
       ) : (
-        <p className="muted">{item.unavailableReasonZh}</p>
+        <p className="muted" lang="zh-CN">{item.unavailableReasonZh}</p>
       )}
-      <div className="tag-list" aria-label="主题标签">
-        {item.tags.map((tag) => (
+      <div className="tag-list" aria-label={english ? "Topics" : "主题标签"} lang={translation ? "en" : "zh-CN"}>
+        {(translation?.tags ?? item.tags).map((tag) => (
           <span key={tag}>{tag}</span>
         ))}
       </div>
       <div className="card-footer-meta">
         <span>{item.kind.toUpperCase()}</span>
-        <span>{item.platformVersions.length} 个平台版本</span>
-        {item.claims ? <span>{item.claims.length} 个关键论点</span> : null}
+        <span>{item.platformVersions.length} {english ? "platform versions" : "个平台版本"}</span>
+        {item.claims ? <span>{item.claims.length} {english ? "key claims" : "个关键论点"}</span> : null}
       </div>
     </article>
   );

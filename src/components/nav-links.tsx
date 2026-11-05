@@ -2,21 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useReadingLanguage } from "./reading-language";
 
 const navItems = [
-  { href: "/", label: "今日" },
-  { href: "/library", label: "知识库" },
-  { href: "/sources", label: "来源" },
-  { href: "/settings", label: "设置" },
+  { href: "/", zh: "今日", en: "Today" },
+  { href: "/library", zh: "知识库", en: "Library" },
+  { href: "/sources", zh: "来源", en: "Sources" },
+  { href: "/settings", zh: "设置", en: "Settings" },
 ];
 
 export function NavLinks() {
   const pathname = usePathname();
+  const locale = useReadingLanguage();
   return (
-    <nav aria-label="主导航" className="main-nav">
+    <nav aria-label={locale === "en" ? "Main navigation" : "主导航"} className="main-nav" lang={locale === "en" ? "en" : "zh-CN"}>
       {navItems.map((item) => {
         const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-        return <Link aria-current={active ? "page" : undefined} className={active ? "active" : undefined} href={item.href} key={item.href}>{item.label}</Link>;
+        return <Link aria-current={active ? "page" : undefined} className={active ? "active" : undefined} href={item.href} key={item.href}>{item[locale]}</Link>;
       })}
     </nav>
   );
