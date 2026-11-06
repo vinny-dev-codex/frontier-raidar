@@ -33,8 +33,9 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    url("/white-gothic-staggered.webp") center / auto no-repeat,
-    url("/white-gothic-woven-tile.webp") center / auto repeat;
+    url("/white-gothic-relocated-scroll.webp") left 12px bottom -38px no-repeat,
+    url("/white-gothic-staggered-local.webp") center / auto no-repeat,
+    url("/white-gothic-woven-tile-local.webp") center / auto repeat;
 }
 a { color: var(--text-accent); text-underline-offset: 3px; }
 h1, h2, h3, p { margin-top: 0; }
@@ -203,7 +204,11 @@ th { background: var(--accent-soft); }
 
 @media (max-width: 700px) {
   body::before {
-    background-image: url("/white-gothic-staggered-mobile.webp"), url("/white-gothic-woven-tile.webp");
+    background-image:
+      url("/white-gothic-relocated-scroll.webp"),
+      url("/white-gothic-staggered-mobile-local.webp"),
+      url("/white-gothic-woven-tile-local.webp");
+    background-position: left -58px bottom -76px, center, center;
   }
   .site-header { align-items: flex-start; flex-direction: column; }
   .page-container { padding-top: 36px; }
