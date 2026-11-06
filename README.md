@@ -103,11 +103,11 @@ Windows 本地计划任务每天 14:00（悉尼本地时间）运行生产流程
 2. 在 Vercel 环境变量中填写 `NEXT_PUBLIC_SUPABASE_URL` 与 `NEXT_PUBLIC_SUPABASE_ANON_KEY`。
 3. 执行公开读取迁移后，直接把 Vercel 网址分享给家人。
 
-### 累计访客
+### 首页总浏览量
 
-在 Supabase SQL Editor 执行 `supabase/migrations/202611060009_unique_visitors.sql`，并在 Vercel Production 设置服务端变量 `SUPABASE_SERVICE_ROLE_KEY` 和 `VISITOR_HASH_SECRET`。后者使用至少 32 字节的随机值并保持稳定；更换会使同一 IP 生成新的摘要。重新部署后开始计数。
+在 Supabase SQL Editor 执行 `supabase/migrations/202611060010_homepage_views.sql`，并在 Vercel Production 设置服务端变量 `SUPABASE_SERVICE_ROLE_KEY`。
 
-首页显示上线以来按公网 IP 去重的累计访客。同一 IP 重复访问只记一次，共用公网出口的多人合计一次。数据库只保存带密钥的摘要；只有服务端可以登记和读取记录，访客接口仅返回累计数字。无法读取时显示「—」。
+打开或刷新首页计一次；浏览其他页面不计数。数据库只保存累计数字，不记录 IP。统计自启用起累计，无法读取时显示「—」。
 
 ## 验证命令
 

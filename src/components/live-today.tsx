@@ -7,14 +7,13 @@ import { loadLiveItems } from "@/lib/live-data";
 import { SOURCES } from "@/lib/sources";
 import type { KnowledgeItem } from "@/lib/types";
 import { setReadingLanguage, useReadingLanguage } from "./reading-language";
-import { useVisitorCount } from "./visitor-count";
+import { HomeViewCount } from "./home-view-count";
 
 export function LiveToday() {
   const [items, setItems] = useState<KnowledgeItem[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const locale = useReadingLanguage();
   const english = locale === "en";
-  const visitors = useVisitorCount();
 
   useEffect(() => {
     loadLiveItems().then((loaded) => {
@@ -35,7 +34,7 @@ export function LiveToday() {
       <div><strong>{state === "ready" ? items.length : "—"}</strong><span>{english ? "Discovered and processed" : "已发现与处理"}</span></div>
       <div><strong>{state === "ready" ? readyItems.length : "—"}</strong><span>{english ? "Ready to read" : "可阅读"}</span></div>
       <div><strong>{SOURCES.length}</strong><span>{english ? "Active sources" : "启用来源"}</span></div>
-      <div><strong>{visitors?.toLocaleString(english ? "en" : "zh-CN") ?? "—"}</strong><span title={english ? "One visit per public IP since counting began" : "自启用统计起，每个公网 IP 只计一次"}>{english ? "Unique visitors by IP" : "累计访客（按 IP 去重）"}</span></div>
+      <HomeViewCount locale={locale} />
     </section>
     {state === "ready" && items.length === 0 ? <aside className="notice">{english ? "No verified cards yet." : "还没有真实知识卡片。内容必须先通过原文与证据校验才会出现。"}</aside> : null}
     <section className="section-block" aria-labelledby="ready-heading">
