@@ -33,7 +33,7 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    url("/white-gothic-staggered-tone-matched.webp") center / auto no-repeat,
+    url("/white-gothic-staggered-contrast-ten.webp") center / auto no-repeat,
     url("/white-gothic-woven-tile.webp") center / auto repeat;
 }
 a { color: var(--text-accent); text-underline-offset: 3px; }
