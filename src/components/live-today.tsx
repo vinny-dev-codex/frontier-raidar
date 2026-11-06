@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ItemCard } from "./item-card";
+import { LibrarySearch } from "./library-search";
 import { loadLiveItems } from "@/lib/live-data";
 import { SOURCES } from "@/lib/sources";
 import type { KnowledgeItem } from "@/lib/types";
@@ -24,21 +23,17 @@ export function LiveToday() {
 
   const readyItems = items.filter((item) => item.status === "ready");
   return <div lang={english ? "en" : "zh-CN"}>
-    <section className="page-heading today-heading">
+    <div className="today-overview">
+      <section className="stats-grid" aria-label={english ? "Today’s stats" : "今日状态"}>
+        <div><strong>{state === "ready" ? items.length : "—"}</strong><span>{english ? "Discovered and processed" : "已发现与处理"}</span></div>
+        <div><strong>{state === "ready" ? readyItems.length : "—"}</strong><span>{english ? "Ready to read" : "可阅读"}</span></div>
+        <div><strong>{SOURCES.length}</strong><span>{english ? "Active sources" : "启用来源"}</span></div>
+        <HomeViewCount locale={locale} />
+      </section>
       <button className="language-button" type="button" lang="zh-CN" onClick={() => setReadingLanguage(english ? "zh" : "en")}>{english ? "切回中文" : "一键翻译英文"}</button>
-    </section>
+    </div>
     {state === "loading" ? <p className="muted">{english ? "Loading the library…" : "正在读取知识库…"}</p> : null}
     {state === "error" ? <aside className="setup-message error">{english ? "The library could not load. Please refresh and try again." : "无法读取 Supabase 数据，请刷新后重试。"}</aside> : null}
-    <section className="stats-grid" aria-label={english ? "Today’s stats" : "今日状态"}>
-      <div><strong>{state === "ready" ? items.length : "—"}</strong><span>{english ? "Discovered and processed" : "已发现与处理"}</span></div>
-      <div><strong>{state === "ready" ? readyItems.length : "—"}</strong><span>{english ? "Ready to read" : "可阅读"}</span></div>
-      <div><strong>{SOURCES.length}</strong><span>{english ? "Active sources" : "启用来源"}</span></div>
-      <HomeViewCount locale={locale} />
-    </section>
-    {state === "ready" && items.length === 0 ? <aside className="notice">{english ? "No verified cards yet." : "还没有真实知识卡片。内容必须先通过原文与证据校验才会出现。"}</aside> : null}
-    <section className="section-block">
-      <div className="section-heading-row today-library-row"><Link href="/library">{english ? "View full library →" : "查看全部知识库 →"}</Link></div>
-      <div className="item-list">{readyItems.map((item) => <ItemCard item={item} key={item.id} locale={locale} />)}</div>
-    </section>
+    {state === "ready" ? <LibrarySearch items={readyItems} home /> : null}
   </div>;
 }
