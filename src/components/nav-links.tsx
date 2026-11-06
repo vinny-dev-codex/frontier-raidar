@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useReadingLanguage } from "./reading-language";
+import { setReadingLanguage, useReadingLanguage } from "./reading-language";
 
 const navItems = [
   { href: "/", zh: "今日", en: "Today" },
-  { href: "/library", zh: "知识库", en: "Library" },
   { href: "/sources", zh: "来源", en: "Sources" },
 ];
 
@@ -19,6 +18,14 @@ export function NavLinks() {
         const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
         return <Link aria-current={active ? "page" : undefined} className={active ? "active" : undefined} href={item.href} key={item.href}>{item[locale]}</Link>;
       })}
+      <button
+        aria-label={locale === "en" ? "EN / CN — Switch to Chinese" : "EN / CN — 切换到英文"}
+        className="language-button"
+        onClick={() => setReadingLanguage(locale === "en" ? "zh" : "en")}
+        type="button"
+      >
+        EN / CN
+      </button>
     </nav>
   );
 }

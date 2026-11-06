@@ -5,7 +5,7 @@ import { LibrarySearch } from "./library-search";
 import { loadLiveItems } from "@/lib/live-data";
 import { SOURCES } from "@/lib/sources";
 import type { KnowledgeItem } from "@/lib/types";
-import { setReadingLanguage, useReadingLanguage } from "./reading-language";
+import { useReadingLanguage } from "./reading-language";
 import { HomeViewCount } from "./home-view-count";
 
 export function LiveToday() {
@@ -23,17 +23,14 @@ export function LiveToday() {
 
   const readyItems = items.filter((item) => item.status === "ready");
   return <div lang={english ? "en" : "zh-CN"}>
-    <div className="today-overview">
-      <section className="stats-grid" aria-label={english ? "Today’s stats" : "今日状态"}>
-        <div><strong>{state === "ready" ? items.length : "—"}</strong><span>{english ? "Discovered and processed" : "已发现与处理"}</span></div>
-        <div><strong>{state === "ready" ? readyItems.length : "—"}</strong><span>{english ? "Ready to read" : "可阅读"}</span></div>
-        <div><strong>{SOURCES.length}</strong><span>{english ? "Active sources" : "启用来源"}</span></div>
-        <HomeViewCount locale={locale} />
-      </section>
-      <button className="language-button" type="button" lang="zh-CN" onClick={() => setReadingLanguage(english ? "zh" : "en")}>{english ? "切回中文" : "一键翻译英文"}</button>
-    </div>
+    <section className="stats-grid today-stats" aria-label={english ? "Today’s stats" : "今日状态"}>
+      <div><strong>{state === "ready" ? items.length : "—"}</strong><span>{english ? "Discovered and processed" : "已发现与处理"}</span></div>
+      <div><strong>{state === "ready" ? readyItems.length : "—"}</strong><span>{english ? "Ready to read" : "可阅读"}</span></div>
+      <div><strong>{SOURCES.length}</strong><span>{english ? "Active sources" : "启用来源"}</span></div>
+      <HomeViewCount locale={locale} />
+    </section>
     {state === "loading" ? <p className="muted">{english ? "Loading the library…" : "正在读取知识库…"}</p> : null}
     {state === "error" ? <aside className="setup-message error">{english ? "The library could not load. Please refresh and try again." : "无法读取 Supabase 数据，请刷新后重试。"}</aside> : null}
-    {state === "ready" ? <LibrarySearch items={readyItems} home /> : null}
+    {state === "ready" ? <LibrarySearch items={readyItems} /> : null}
   </div>;
 }

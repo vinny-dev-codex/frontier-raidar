@@ -5,13 +5,11 @@ import type { KnowledgeItem } from "@/lib/types";
 import { ItemCard } from "./item-card";
 import { useReadingLanguage } from "./reading-language";
 
-export function LibrarySearch({ items, home = false }: { items: KnowledgeItem[]; home?: boolean }) {
+export function LibrarySearch({ items }: { items: KnowledgeItem[] }) {
   const locale = useReadingLanguage();
   const en = locale === "en";
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("all");
   const [source, setSource] = useState("all");
-  const [topic, setTopic] = useState("all");
   const [sort, setSort] = useState("newest");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -31,14 +29,11 @@ export function LibrarySearch({ items, home = false }: { items: KnowledgeItem[];
   }, []);
 
   const sources = useMemo(() => [...new Set(items.map((item) => item.sourceName))].sort(), [items]);
-  const topics = useMemo(() => [...new Set(items.flatMap((item) => item.tags))].sort(), [items]);
 
   const results = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     const filtered = items.filter((item) => {
-      if (status !== "all" && item.status !== status) return false;
       if (source !== "all" && item.sourceName !== source) return false;
-      if (topic !== "all" && !item.tags.includes(topic)) return false;
       if (favoritesOnly && !favorites.has(item.id)) return false;
       if (!normalized) return true;
       const text = [
@@ -56,14 +51,13 @@ export function LibrarySearch({ items, home = false }: { items: KnowledgeItem[];
     });
     return filtered.toSorted((a, b) => {
       if (sort === "source") return a.sourceName.localeCompare(b.sourceName);
-      if (sort === "status") return a.status.localeCompare(b.status);
       return b.publishedAt.localeCompare(a.publishedAt);
     });
-  }, [favorites, favoritesOnly, items, query, sort, source, status, topic]);
+  }, [favorites, favoritesOnly, items, query, sort, source]);
 
   return (
     <div lang={en ? "en" : "zh-CN"}>
-      <div className={home ? "search-panel home-controls" : "search-panel library-controls"}>
+      <div className="search-panel home-controls">
         <label>
           {en ? "Search titles, people, companies, terms or topics" : "搜索标题、人物、公司、术语或主题"}
           <input
@@ -73,16 +67,6 @@ export function LibrarySearch({ items, home = false }: { items: KnowledgeItem[];
             value={query}
           />
         </label>
-        {!home && <label>
-          {en ? "Status" : "状态"}
-          <select onChange={(event) => setStatus(event.target.value)} value={status}>
-            <option value="all">{en ? "All" : "全部"}</option>
-            <option value="ready">Ready</option>
-            <option value="no_transcript">{en ? "No transcript" : "暂无字幕"}</option>
-            <option value="no_article_body">{en ? "No article text" : "暂未获取原文"}</option>
-            <option value="pending_review">{en ? "Pending" : "等待处理"}</option>
-          </select>
-        </label>}
         <label>
           {en ? "Source" : "来源"}
           <select onChange={(event) => setSource(event.target.value)} value={source}>
@@ -90,19 +74,11 @@ export function LibrarySearch({ items, home = false }: { items: KnowledgeItem[];
             {sources.map((name) => <option key={name} value={name}>{name}</option>)}
           </select>
         </label>
-        {!home && <label>
-          {en ? "Topic" : "主题"}
-          <select onChange={(event) => setTopic(event.target.value)} value={topic}>
-            <option value="all">{en ? "All topics" : "全部主题"}</option>
-            {topics.map((name) => <option key={name} value={name}>{name}</option>)}
-          </select>
-        </label>}
         <label>
           {en ? "Sort" : "排序"}
           <select onChange={(event) => setSort(event.target.value)} value={sort}>
             <option value="newest">{en ? "Newest" : "最新发布"}</option>
             <option value="source">{en ? "Source name" : "来源名称"}</option>
-            {!home && <option value="status">{en ? "Processing status" : "处理状态"}</option>}
           </select>
         </label>
         <label className="checkbox-label">
@@ -110,15 +86,12 @@ export function LibrarySearch({ items, home = false }: { items: KnowledgeItem[];
           {en ? "Saved only" : "只看收藏"}
         </label>
       </div>
-      <div className={home ? "result-row home-clear-row" : "result-row"}>
-        {!home && <p className="result-count">{en ? `Results: ${results.length}` : `找到 ${results.length} 条`}</p>}
+      <div className="result-row home-clear-row">
         <button className="text-button" onClick={() => {
           setQuery("");
-          setStatus("all");
           setSource("all");
-          setTopic("all");
           setFavoritesOnly(false);
-          if (home) setSort("newest");
+          setSort("newest");
         }} type="button">{en ? "Clear filters" : "清除筛选"}</button>
       </div>
       <div className="item-list">

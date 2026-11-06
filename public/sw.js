@@ -1,5 +1,5 @@
-const CACHE = "frontier-radar-v2";
-const SHELL = ["/", "/library", "/sources", "/manifest.webmanifest", "/icon.svg"];
+const CACHE = "frontier-radar-v3";
+const SHELL = ["/", "/sources", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));

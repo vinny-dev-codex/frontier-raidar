@@ -1,8 +1,5 @@
-import type { Metadata } from "next";
-import { LiveLibrary } from "@/components/live-library";
-
-export const metadata: Metadata = { title: "知识库" };
+import { redirect } from "next/navigation";
 
 export default function LibraryPage() {
-  return <LiveLibrary />;
+  redirect("/");
 }
