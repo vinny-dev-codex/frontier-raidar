@@ -32,6 +32,6 @@ export function HomeViewCount({ locale }: { locale: Locale }) {
 
   return <div>
     <strong>{count?.toLocaleString(english ? "en" : "zh-CN") ?? "—"}</strong>
-    <span>{english ? "Total homepage views" : "首页总浏览量"}</span>
+    <span>{english ? "Total views" : "总浏览量"}</span>
   </div>;
 }

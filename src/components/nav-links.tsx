@@ -20,7 +20,6 @@ export function NavLinks() {
       })}
       <button
         aria-label={locale === "en" ? "EN / CN — Switch to Chinese" : "EN / CN — 切换到英文"}
-        className="language-button"
         onClick={() => setReadingLanguage(locale === "en" ? "zh" : "en")}
         type="button"
       >
