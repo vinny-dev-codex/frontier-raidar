@@ -33,9 +33,8 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    url("/white-gothic-cut-scroll.webp") left 12px bottom -38px no-repeat,
-    url("/white-gothic-paper-desktop.webp") center / auto no-repeat,
-    url("/white-gothic-paper-tile.webp") center / auto repeat;
+    url("/white-gothic-staggered.webp") center / auto no-repeat,
+    url("/white-gothic-woven-tile.webp") center / auto repeat;
 }
 a { color: var(--text-accent); text-underline-offset: 3px; }
 h1, h2, h3, p { margin-top: 0; }
@@ -204,11 +203,7 @@ th { background: var(--accent-soft); }
 
 @media (max-width: 700px) {
   body::before {
-    background-image:
-      url("/white-gothic-cut-scroll.webp"),
-      url("/white-gothic-paper-mobile.webp"),
-      url("/white-gothic-paper-tile.webp");
-    background-position: left -58px bottom -76px, center, center;
+    background-image: url("/white-gothic-staggered-mobile.webp"), url("/white-gothic-woven-tile.webp");
   }
   .site-header { align-items: flex-start; flex-direction: column; }
   .page-container { padding-top: 36px; }
