@@ -28,7 +28,18 @@ const publicSchema = z.object({
 });
 
 export function getPrivateEnv() {
-  return privateSchema.parse(process.env);
+  return privateSchema.parse({
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
+    DEEPSEEK_BASE_URL: process.env.DEEPSEEK_BASE_URL,
+    DEEPSEEK_MODEL: process.env.DEEPSEEK_MODEL,
+    DASHSCOPE_API_KEY: process.env.DASHSCOPE_API_KEY,
+    DASHSCOPE_BASE_URL: process.env.DASHSCOPE_BASE_URL,
+    QWEN_EMBEDDING_MODEL: process.env.QWEN_EMBEDDING_MODEL,
+    YOUTUBE_API_KEY: process.env.YOUTUBE_API_KEY,
+    YOUTUBE_API_BASE_URL: process.env.YOUTUBE_API_BASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    OWNER_EMAIL: process.env.OWNER_EMAIL,
+  });
 }
 
 export function getPublicEnv() {

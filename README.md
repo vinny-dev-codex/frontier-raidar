@@ -105,7 +105,7 @@ Windows 本地计划任务每天 14:00（悉尼本地时间）运行生产流程
 
 ### 首页总浏览量
 
-在 Supabase SQL Editor 执行 `supabase/migrations/202611060010_homepage_views.sql`，并在 Vercel Production 设置服务端变量 `SUPABASE_SERVICE_ROLE_KEY`。
+在 Supabase SQL Editor 执行 `supabase/migrations/202611060010_homepage_views.sql`，并在 Vercel Production 设置服务端变量 `SUPABASE_SERVICE_ROLE_KEY` 和 `HOME_VIEW_COUNT_ENABLED=true`。
 
 打开或刷新首页计一次；浏览其他页面不计数。数据库只保存累计数字，不记录 IP。统计自启用起累计，无法读取时显示「—」。
 
