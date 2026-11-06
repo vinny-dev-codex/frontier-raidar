@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { hasCompleteEnglish, setReadingLanguage, useReadingLanguage, type Locale } from "./reading-language";
+import { hasCompleteEnglish, useReadingLanguage, type Locale } from "./reading-language";
 import { EvidenceBlock } from "./evidence-block";
 import { ReadingActions } from "./reading-actions";
 import { StatusBadge } from "./status-badge";
@@ -16,7 +16,7 @@ const copy = {
     evidenceNote: "引文保留英文原文；可一键显示全部中文翻译。出现已识别的专有名词时，会紧随英文补充中文释义。",
     showTranslations: "显示全部中文翻译", hideTranslations: "收起全部中文翻译", assessment: "判断：", analysis: "拓展分析",
     why: "为什么", horizontal: "横向观点", cross: "跨学科模式", application: "现实应用", personal: "对我的意义",
-    visuals: "可视化结构", timeline: "时间线", tree: "知识树", comparison: "对比表", switchLanguage: "English",
+    visuals: "可视化结构", timeline: "时间线", tree: "知识树", comparison: "对比表",
   },
   en: {
     loading: "Loading knowledge card…", missingTitle: "Content unavailable", missingBody: "This item does not exist or has not finished processing.",
@@ -24,7 +24,7 @@ const copy = {
     evidenceNote: "Source quotations remain in their exact original English. Evidence identifiers and links are unchanged.",
     showTranslations: "", hideTranslations: "", assessment: "Assessment: ", analysis: "Extended Analysis",
     why: "Why It Matters", horizontal: "Related Perspectives", cross: "Cross-disciplinary Patterns", application: "Practical Applications", personal: "What It Means for Me",
-    visuals: "Visual Structure", timeline: "Timeline", tree: "Knowledge Tree", comparison: "Comparison", switchLanguage: "中文",
+    visuals: "Visual Structure", timeline: "Timeline", tree: "Knowledge Tree", comparison: "Comparison",
   },
 } as const;
 
@@ -59,18 +59,9 @@ export function LiveItemDetail({ id }: { id: string }) {
   };
   const visuals = activeLocale === "en" ? item.english?.visuals : item.visuals;
 
-  function toggleLanguage() {
-    const next: Locale = activeLocale === "zh" ? "en" : "zh";
-    setShowTranslations(false);
-    setReadingLanguage(next);
-  }
-
   return <article className="detail-page" lang={activeLocale === "en" ? "en" : "zh-CN"}>
     <header className="detail-header">
-      <div className="detail-language-row">
-        <p className="eyebrow">{item.sourceName} · {item.kind.toUpperCase()}</p>
-        {englishAvailable ? <button className="language-button" type="button" onClick={toggleLanguage} aria-label={activeLocale === "zh" ? "Switch reading language to English" : "切换阅读语言为中文"}>🌐 {text.switchLanguage}</button> : null}
-      </div>
+      <p className="eyebrow">{item.sourceName} · {item.kind.toUpperCase()}</p>
       <h1>{item.title}</h1>
       <div className="detail-meta"><StatusBadge status={item.status} locale={activeLocale} /><time dateTime={item.publishedAt}>{item.publishedAt}</time></div>
       <a className="source-resource-link" href={item.canonicalUrl} target="_blank" rel="noreferrer">↗ {text.source}{activeLocale === "en" ? ` (${item.sourceName})` : `（${item.sourceName}）`}</a>

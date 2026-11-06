@@ -58,10 +58,6 @@ export function ReadingActions({ itemId, locale = "zh", compact = false }: { ite
       <button aria-pressed={state.saved} onClick={() => update({ ...state, saved: !state.saved })} type="button">
         {locale === "en" ? (state.saved ? "Saved" : "Save") : (state.saved ? "已收藏" : "收藏")}
       </button>
-      <button aria-pressed={state.read} onClick={() => update({ ...state, read: !state.read })} type="button">
-        {locale === "en" ? (state.read ? "Read" : "Mark as read") : (state.read ? "已读" : "标记已读")}
-      </button>
-      <small>{locale === "en" ? "Stored on this device only" : "状态仅保存在当前设备"}</small>
     </div>
   );
 }
