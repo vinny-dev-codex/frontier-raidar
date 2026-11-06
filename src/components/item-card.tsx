@@ -32,11 +32,6 @@ export function ItemCard({ item, locale = "zh" }: { item: KnowledgeItem; locale?
           <span key={tag}>{tag}</span>
         ))}
       </div>
-      <div className="card-footer-meta">
-        <span>{item.kind.toUpperCase()}</span>
-        <span>{item.platformVersions.length} {english ? "platform versions" : "个平台版本"}</span>
-        {item.claims ? <span>{item.claims.length} {english ? "key claims" : "个关键论点"}</span> : null}
-      </div>
     </article>
   );
 }

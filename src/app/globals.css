@@ -56,8 +56,7 @@ input::placeholder { color: var(--text-muted); opacity: 1; }
 .site-footer { border-top: 1px solid var(--line); color: var(--text-muted); font-size: .85rem; padding: 24px 0 40px; }
 
 .page-heading { max-width: 760px; margin-bottom: 32px; }
-.today-heading { max-width: none; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; }
-.today-heading h1 { margin-bottom: 0; }
+.today-heading { max-width: none; display: flex; align-items: flex-end; justify-content: flex-end; min-height: calc(1.275rem + 8px + clamp(2.16rem, 5.4vw, 3.78rem)); }
 .page-heading > p:last-child { color: var(--text-muted); font-size: 1.05rem; }
 .eyebrow { color: var(--text-accent); font-size: .75rem; font-weight: 800; letter-spacing: .16em; margin-bottom: 8px; }
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
@@ -70,10 +69,11 @@ input::placeholder { color: var(--text-muted); opacity: 1; }
 .section-heading-row { align-items: end; display: flex; gap: 16px; justify-content: space-between; margin-bottom: 14px; }
 .section-heading-row h2, .section-heading-row p { margin-bottom: 0; }
 .section-heading-row > span { color: var(--text-muted); font-size: .85rem; }
+.today-library-row { justify-content: flex-end; min-height: 3.0975rem; }
 
 .item-list, .source-list { display: grid; gap: 14px; }
 .source-card, .claim, .memory-card, .empty-state { border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
-.item-card { padding: 18px 0; }
+.item-card { padding: 18px 0 calc(47px + 1.258rem); }
 .item-card + .item-card { border-top: 1px solid var(--line); }
 .item-card h2, .source-card h2 { margin: 8px 0 10px; }
 .item-card h2 a, .source-card h2 a { color: var(--text-ink); text-decoration: none; }
@@ -93,8 +93,8 @@ input::placeholder { color: var(--text-muted); opacity: 1; }
 .tag-list span, .status { border-radius: 999px; display: inline-block; font-size: .72rem; font-weight: 750; padding: 3px 9px; }
 .tag-list span { color: var(--text-muted); }
 .item-card .tag-list span, .item-card .status { background: none; padding-inline: 0; }
-.card-footer-meta { border-top: 1px solid var(--line); color: var(--text-muted); display: flex; flex-wrap: wrap; font-size: .74rem; gap: 12px; margin-top: 16px; padding-top: 12px; }
 .status { background: var(--accent-soft); color: var(--text-accent); }
+.status-spacer { background: none; padding-inline: 0; }
 .status-no_transcript, .status-no_article_body { background: #fff0c6; color: var(--text-warning); }
 .status-processing_failed { background: #f9dedd; color: var(--text-danger); }
 

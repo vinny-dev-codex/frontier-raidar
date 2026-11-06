@@ -25,7 +25,6 @@ export function LiveToday() {
   const readyItems = items.filter((item) => item.status === "ready");
   return <div lang={english ? "en" : "zh-CN"}>
     <section className="page-heading today-heading">
-      <div><p className="eyebrow">TODAY</p><h1>{english ? "Today’s Frontier Briefing" : "今日前沿信息"}</h1></div>
       <button className="language-button" type="button" lang="zh-CN" onClick={() => setReadingLanguage(english ? "zh" : "en")}>{english ? "切回中文" : "一键翻译英文"}</button>
     </section>
     {state === "loading" ? <p className="muted">{english ? "Loading the library…" : "正在读取知识库…"}</p> : null}
@@ -37,8 +36,8 @@ export function LiveToday() {
       <HomeViewCount locale={locale} />
     </section>
     {state === "ready" && items.length === 0 ? <aside className="notice">{english ? "No verified cards yet." : "还没有真实知识卡片。内容必须先通过原文与证据校验才会出现。"}</aside> : null}
-    <section className="section-block" aria-labelledby="ready-heading">
-      <div className="section-heading-row"><div><p className="eyebrow">PRIORITY</p><h2 id="ready-heading">{english ? "Priority Reading" : "今日优先阅读"}</h2></div><Link href="/library">{english ? "View full library →" : "查看全部知识库 →"}</Link></div>
+    <section className="section-block">
+      <div className="section-heading-row today-library-row"><Link href="/library">{english ? "View full library →" : "查看全部知识库 →"}</Link></div>
       <div className="item-list">{readyItems.map((item) => <ItemCard item={item} key={item.id} locale={locale} />)}</div>
     </section>
   </div>;

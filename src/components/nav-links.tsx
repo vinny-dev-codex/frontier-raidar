@@ -8,7 +8,6 @@ const navItems = [
   { href: "/", zh: "今日", en: "Today" },
   { href: "/library", zh: "知识库", en: "Library" },
   { href: "/sources", zh: "来源", en: "Sources" },
-  { href: "/settings", zh: "设置", en: "Settings" },
 ];
 
 export function NavLinks() {
