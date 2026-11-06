@@ -32,7 +32,7 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: url("/white-gothic-collage.webp") center / cover no-repeat;
+  background: url("/white-gothic-native.webp") center / auto repeat;
 }
 a { color: var(--text-accent); text-underline-offset: 3px; }
 h1, h2, h3, p { margin-top: 0; }
@@ -200,7 +200,7 @@ th { background: var(--accent-soft); }
 @keyframes pulse { 50% { opacity: .45; } }
 
 @media (max-width: 700px) {
-  body::before { background-image: url("/white-gothic-collage-mobile.webp"); }
+  body::before { background-image: url("/white-gothic-native-mobile.webp"); }
   .site-header { align-items: flex-start; flex-direction: column; }
   .page-container { padding-top: 36px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
