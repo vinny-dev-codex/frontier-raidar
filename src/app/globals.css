@@ -52,7 +52,8 @@ input::placeholder { color: var(--text-muted); opacity: 1; }
 .main-nav { display: flex; align-items: center; gap: 18px; }
 .main-nav :is(a, button) { color: var(--text-ink); font-weight: 650; text-decoration: none; }
 .main-nav :is(a, button):hover { color: var(--text-accent); }
-.main-nav button { background: none; border: 0; padding: 0; cursor: pointer; }
+.main-nav button { background: none; border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; cursor: pointer; }
+.main-nav button:hover { border-color: var(--accent); }
 .main-nav a.active { color: var(--text-accent); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 8px; }
 .page-container { flex: 1; padding-block: 58px 80px; }
 .site-footer { border-top: 1px solid var(--line); color: var(--text-muted); font-size: .85rem; padding: 24px 0 40px; }
@@ -61,7 +62,7 @@ input::placeholder { color: var(--text-muted); opacity: 1; }
 .page-heading > p:last-child { color: var(--text-muted); font-size: 1.05rem; }
 .eyebrow { color: var(--text-accent); font-size: .75rem; font-weight: 800; letter-spacing: .16em; margin-bottom: 8px; }
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-.stats-grid div { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+.stats-grid div { border: 1px solid transparent; border-radius: var(--radius); padding: 18px; }
 .stats-grid strong, .stats-grid span { display: block; }
 .stats-grid strong { font-size: 1.7rem; line-height: 1.1; }
 .stats-grid span { color: var(--text-muted); font-size: .82rem; margin-top: 6px; }
